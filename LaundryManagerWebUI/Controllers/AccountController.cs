@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using LaundryManagerAPIDomain.Entities;
+using LaundryManagerWebUI.Dtos;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,36 +15,62 @@ namespace LaundryManagerWebUI.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        // GET: api/<AccountController>
-        [HttpGet]
-        public IEnumerable<string> Get()
+        private UserManager<ApplicationUser> _userManager;
+        private RoleManager<ApplicationUser> _roleManager;
+        private SignInManager<ApplicationUser> _signManager;
+        public AccountController(UserManager<ApplicationUser> userManager,
+            RoleManager<IdentityRole> roleManager,
+            SignInManager<ApplicationUser> signInManager)
         {
-            return new string[] { "value1", "value2" };
+            _userManager = userManager;
+            _signManager = signInManager;
         }
 
-        // GET api/<AccountController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
+
+        [HttpPost("laundry/new")]
+        public async Task<IActionResult> Register([FromBody] RegisterDto model)
         {
-            return "value";
+            if (!ModelState.IsValid) return BadRequest();
+
+            var result = await _userManager.CreateAsync(new ApplicationUser
+            {
+                UserName = model.Username,
+                Email = model.Username,
+                Profile = new UserProfile()
+                {
+                    Name = model.OwnerName,
+                    CreatedAt = DateTime.Now,
+                    UpdatedAt=DateTime.Now,
+                    Laundry = new Laundry
+                    {
+                        Name = model.LaundryName,
+                        CreatedAt = DateTime.Now,
+                        UpdatedAt = DateTime.Now,
+                        Address= new Location
+                        {
+                            State=model.Address.State,
+                            LGA=model.Address.State,
+                            Country="Nigeria",
+                            Street=model.Address.Street
+                        }
+
+                    }
+                }
+            }, model.Password); ;
+
+            if (result.Succeeded) return Ok();
+
+            return BadRequest();
         }
 
-        // POST api/<AccountController>
-        [HttpPost]
-        public void Post([FromBody] string value)
+        [HttpPost("login")]
+        public async Task<IActionResult> Login ([FromBody] LoginDto model)
         {
-        }
+            var result =await _signManager.PasswordSignInAsync(model.Username, model.Password,false,false);
+            if (result.Succeeded) return Ok();
 
-        // PUT api/<AccountController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
+            return BadRequest();
 
-        // DELETE api/<AccountController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
         }
     }
 }

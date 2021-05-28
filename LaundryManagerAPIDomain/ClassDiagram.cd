@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1" MembersFormat="FullSignature">
+  <Class Name="LaundryManagerAPIDomain.Entities.Laundry" Collapsed="true">
+    <Position X="5.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>QAACAAAAAAAACAAAACAAAAQAAAAAAAACAAAACAAAAAA=</HashCode>
+      <FileName>Entities\Laundry.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LaundryManagerAPIDomain.Entities.ApplicationUser">
+    <Position X="1" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAA=</HashCode>
+      <FileName>Entities\ApplicationUser.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="LaundryManagerAPIDomain.Entities.UserProfile">
+    <Position X="3.25" Y="2" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAACACAACAAAAQAAAAACAACAAAAQAAAAAA=</HashCode>
+      <FileName>Entities\UserProfile.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Enum Name="LaundryManagerAPIDomain.Entities.Gender" Collapsed="true">
+    <Position X="1" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>BAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAoAAAA=</HashCode>
+      <FileName>Entities\UserProfile.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>
