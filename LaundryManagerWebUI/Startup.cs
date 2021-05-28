@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using LaundryManagerAPIDomain.Services;
+using Microsoft.OpenApi.Models;
 
 namespace LaundryManagerWebUI
 {
@@ -30,6 +31,10 @@ namespace LaundryManagerWebUI
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "LaundryManagerApi", Version = "v1" });
+            });
             services.AddDbContext<ApplicationDbContext>(options =>
                         options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
                         b => b.MigrationsAssembly("LaundryManagerWebUI")));
@@ -44,6 +49,9 @@ namespace LaundryManagerWebUI
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "LaundryManagerApi v1"));
 
             app.UseHttpsRedirection();
 
