@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using LaundryManagerAPIDomain.Services;
 
 namespace LaundryManagerWebUI
 {
@@ -54,6 +55,8 @@ namespace LaundryManagerWebUI
             {
                 endpoints.MapControllers();
             });
+
+            SeedAdmin.EnsurePopulated(app, Configuration);
         }
     }
 }
