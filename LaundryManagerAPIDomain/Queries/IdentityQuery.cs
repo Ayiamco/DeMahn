@@ -25,5 +25,7 @@ namespace LaundryManagerAPIDomain.Queries
             return string.Join(",", userRoles);
         }
 
+        
+
     }
 }

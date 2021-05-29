@@ -30,22 +30,32 @@ namespace LaundryManagerWebUI.Controllers
         {
             if (!ModelState.IsValid) return BadRequest();
 
-            var result =await  _authService.CreateLaundry(model);
+            var result = await _authService.CreateLaundry(model);
             if (result.Result == AuthServiceResult.Succeeded) return Ok(result.Data);
 
-            return  StatusCode(500);
+            return StatusCode(500);
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login ([FromBody] LoginDto model)
+        public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
             if (!ModelState.IsValid) return BadRequest();
 
-            var result = await _authService.Authenticate(model) ;
-            if (result.Result==AuthServiceResult.Succeeded) return Ok(result.Data);
+            var result = await _authService.Authenticate(model);
+            if (result.Result == AuthServiceResult.Succeeded) return Ok(result.Data);
 
             return BadRequest();
 
+        }
+
+        [HttpPost("refreshToken")]
+        public async Task<ActionResult> RefreshToken([FromBody] JWTDto model)
+        {
+            var resp=await _authService.RefreshJWtToken(model);
+
+            if(resp.Result== AuthServiceResult.Succeeded)  return Ok(resp.Data);
+
+            return BadRequest(resp.Data);
         }
     }
 }

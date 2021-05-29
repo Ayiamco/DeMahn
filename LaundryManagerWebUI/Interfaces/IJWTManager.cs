@@ -12,6 +12,5 @@ namespace LaundryManagerWebUI.Interfaces
     {
         public string GetToken(JWTDto model);
         public ClaimsPrincipal GetPrincipalFromExpiredToken(JWTDto model);
-        public string RefreshJwt(JWTDto model);
     }
 }

@@ -5,6 +5,7 @@ using LaundryManagerWebUI.Dtos;
 using LaundryManagerWebUI.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -88,19 +89,11 @@ namespace LaundryManagerWebUI.Services
                 var user = await _userManager.FindByEmailAsync(model.Username);
                 var userRole = _userRepo.GetUserRole(user);
                 var token = _jwtmanager.GetToken(new JWTDto { UserEmail = model.Username, UserId = user.Id, UserRole = userRole });
-
-                var randomNumber = new byte[32];
-                using (var generator = RandomNumberGenerator.Create())
-                {
-                    generator.GetBytes(randomNumber);
-                    user.RefreshToken = Convert.ToBase64String(randomNumber);
-                    await _unitOFWork.SaveAsync();
-                }
-
+                await UpdateRefreshToken(user);
                 return new ResponseDto<AuthServiceResult, string>
                 {
                     Result = AuthServiceResult.Succeeded,
-                    Data = JsonConvert.SerializeObject(new { Token = token, RefreshToken = user.RefreshToken }),
+                    Data = JsonConvert.SerializeObject(new { JwtToken = token, RefreshToken = user.RefreshToken }),
                 };
             }
 
@@ -111,5 +104,86 @@ namespace LaundryManagerWebUI.Services
             }; ;
 
         }
+
+        public async Task<ResponseDto<AuthServiceResult, string>> RefreshJWtToken(JWTDto model)
+        {
+            try
+            {
+                var claim =_jwtmanager.GetPrincipalFromExpiredToken(model);
+                var claims = claim.Claims.ToList();
+                var user = await _userManager.FindByEmailAsync(claims[2].Value); 
+                if (user.RefreshToken != model.RefreshToken) return new ResponseDto<AuthServiceResult, string>
+                {
+                    Result = AuthServiceResult.Failed,
+                    Data = JsonConvert.SerializeObject(new
+                    {
+                        Errors = new
+                        {
+                            refreshToken = new string[] { "refresh token has being changed, go to login" }
+                        },
+
+                    })
+                };
+
+                model.UserEmail = user.Email;
+                model.UserId = user.Id;
+                model.UserRole = RoleNames.Owner;
+                var newJwt = _jwtmanager.GetToken(model);
+                await UpdateRefreshToken(user);
+
+                return new ResponseDto<AuthServiceResult, string>
+                {
+                    Result = AuthServiceResult.Succeeded,
+                    Data = JsonConvert.SerializeObject(new
+                    {
+                        JwtToken= newJwt,
+                        RefreshToken=user.RefreshToken
+                    })
+                };
+            }
+            catch (SecurityTokenException)
+            {
+                return new ResponseDto<AuthServiceResult, string>
+                {
+                    Result = AuthServiceResult.Failed,
+                    Data = JsonConvert.SerializeObject(new
+                    {
+                        Errors = new 
+                        { 
+                            JwtToken=  new string[] { "Invalid jwt token" }
+                        },
+                       
+                    })
+                };
+            }
+            catch
+            {
+                return new ResponseDto<AuthServiceResult, string>
+                {
+                    Result = AuthServiceResult.Failed,
+                    Data = JsonConvert.SerializeObject(new
+                    {
+                        Errors = new
+                        {
+                            ServerError = new string[] { "Unknown server error occured" }
+                        },
+
+                    })
+                };
+            }
+        }
+
+        private async Task UpdateRefreshToken(ApplicationUser user)
+        {
+            var randomNumber = new byte[32];
+            using (var generator = RandomNumberGenerator.Create())
+            {
+                generator.GetBytes(randomNumber);
+                user.RefreshToken = Convert.ToBase64String(randomNumber);
+                await _unitOFWork.SaveAsync();
+            }
+        }
     }
+
 }
+   

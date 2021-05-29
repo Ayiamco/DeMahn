@@ -8,5 +8,6 @@ namespace LaundryManagerWebUI.Interfaces
     {
         Task<ResponseDto<AuthServiceResult, string>> Authenticate(LoginDto model);
         Task<ResponseDto<AuthServiceResult, string>> CreateLaundry(RegisterDto model);
+        Task<ResponseDto<AuthServiceResult, string>> RefreshJWtToken(JWTDto model);
     }
 }
