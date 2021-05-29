@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace LaundryManagerAPIDomain.Queries
 {
-    public abstract class GenericRepository<T1,T2> where T1:class
+    public abstract class GenericQuery<T1,T2> where T1:class
     {
         protected ApplicationDbContext _context;
 
-        public GenericRepository(ApplicationDbContext context)
+        public GenericQuery(ApplicationDbContext context)
         {
             _context = context;
         }

@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using LaundryManagerAPIDomain.Services;
+using LaundryManagerWebUI.Interfaces;
+using LaundryManagerWebUI.Services;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -16,15 +18,10 @@ namespace LaundryManagerWebUI.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
-        private UserManager<ApplicationUser> _userManager;
-        private RoleManager<ApplicationUser> _roleManager;
-        private SignInManager<ApplicationUser> _signManager;
-        public AccountController(UserManager<ApplicationUser> userManager,
-            RoleManager<IdentityRole> roleManager,
-            SignInManager<ApplicationUser> signInManager)
+        private IAuthService _authService;
+        public AccountController(IAuthService _authService)
         {
-            _userManager = userManager;
-            _signManager = signInManager;
+            this._authService = _authService;
         }
 
 
@@ -33,33 +30,8 @@ namespace LaundryManagerWebUI.Controllers
         {
             if (!ModelState.IsValid) return BadRequest();
 
-            var user = new ApplicationUser
-            {
-                UserName = model.Username, Email = model.Username,
-                Profile = new UserProfile()
-                {
-                    Name = model.OwnerName,CreatedAt = DateTime.Now,UpdatedAt = DateTime.Now,
-                    Laundry = new Laundry
-                    {
-                        Name = model.LaundryName,CreatedAt = DateTime.Now,UpdatedAt = DateTime.Now,
-                        Address = new Location
-                        {
-                            State = model.Address.State,LGA = model.Address.State,Country = "Nigeria",
-                            Street = model.Address.Street
-                        }
-
-                    }
-                }
-            };
-            var result = await _userManager.CreateAsync(user, model.Password); ;
-
-            if (result.Succeeded) 
-            {
-                await _userManager.AddToRoleAsync(user,RoleNames.Owner);
-                string id = user.Id;
-                return Ok();
-            }
-           
+            var result =await  _authService.CreateLaundry(model);
+            if (result.Result == AuthServiceResult.Succeeded) return Ok(result.Data);
 
             return  StatusCode(500);
         }
@@ -69,8 +41,8 @@ namespace LaundryManagerWebUI.Controllers
         {
             if (!ModelState.IsValid) return BadRequest();
 
-            var result =await _signManager.PasswordSignInAsync(model.Username, model.Password,false,false);
-            if (result.Succeeded) return Ok();
+            var result = await _authService.Authenticate(model) ;
+            if (result.Result==AuthServiceResult.Succeeded) return Ok(result.Data);
 
             return BadRequest();
 

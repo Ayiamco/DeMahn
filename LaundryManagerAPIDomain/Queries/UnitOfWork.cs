@@ -1,0 +1,29 @@
+﻿using LaundryManagerAPIDomain.Contracts;
+using LaundryManagerAPIDomain.Entities;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace LaundryManagerAPIDomain.Queries
+{
+    public class UnitOfWork:ISaveChanges
+    {
+        private  ApplicationDbContext _context;
+        public UnitOfWork(ApplicationDbContext _context )
+        {
+            this._context = _context;
+        }
+
+        public void Save()
+        {
+            _context.SaveChanges();
+        }
+
+        public async Task SaveAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
+    }
+
+}

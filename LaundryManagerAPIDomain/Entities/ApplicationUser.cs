@@ -7,5 +7,6 @@ namespace LaundryManagerAPIDomain.Entities
     {
         public UserProfile Profile { get; set; }
         public int ProfileId {get;set;}
+        public string RefreshToken { get; set; }
     }
 }

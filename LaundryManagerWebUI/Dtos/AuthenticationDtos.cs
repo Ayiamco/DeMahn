@@ -27,4 +27,14 @@ namespace LaundryManagerWebUI.Dtos
         public string OwnerName { get; set; }
         public Location Address { get; set; }
     }
+
+    public class JWTDto
+    {
+        public string UserId { get; set; }
+        public string JWTSigningKey { get; set; }
+        public string RefreshToken { get; set; }
+        public string JwtToken { get; set; }
+        public string UserRole { get; set; }
+        public string UserEmail { get; set; }
+    }
 }

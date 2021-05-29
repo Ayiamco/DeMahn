@@ -15,6 +15,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using LaundryManagerAPIDomain.Services;
 using Microsoft.OpenApi.Models;
+using LaundryManagerAPIDomain.Contracts;
+using LaundryManagerAPIDomain.Queries;
+using LaundryManagerWebUI.Interfaces;
+using LaundryManagerWebUI.Infrastructure;
+using LaundryManagerWebUI.Services;
 
 namespace LaundryManagerWebUI
 {
@@ -38,8 +43,15 @@ namespace LaundryManagerWebUI
             services.AddDbContext<ApplicationDbContext>(options =>
                         options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
                         b => b.MigrationsAssembly("LaundryManagerWebUI")));
+           
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.AddSingleton<IJWTManager,JWTAuthManager>();
+            services.AddScoped<ISaveChanges, UnitOfWork>();
+            services.AddScoped<IJWTManager, JWTAuthManager>();
+            services.AddScoped<IIdentityQuery, IdentityQuery>();
+            services.AddScoped<IAuthService, AuthService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
