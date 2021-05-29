@@ -4,7 +4,7 @@ using System.Text;
 
 namespace LaundryManagerAPIDomain.Services
 {
-    class RoleNames
+    public class RoleNames
     {
         public const string Owner = "Owner";
         public const string Employee = "Employee";

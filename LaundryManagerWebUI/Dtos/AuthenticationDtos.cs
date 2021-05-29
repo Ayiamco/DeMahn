@@ -1,5 +1,6 @@
 ﻿
 using LaundryManagerAPIDomain.Entities;
+using LaundryManagerWebUI.Infrastructure.CustomValidations;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -13,8 +14,8 @@ namespace LaundryManagerWebUI.Dtos
         [EmailAddress]
         public string Username { get; set; }
 
-        [StringLength(30,MinimumLength =8,ErrorMessage ="Passwprd must be at least 8 characters")]
-        //[RegularExpression(@"^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))", ErrorMessage="Paasword Must contain special, numerical , upper and lower case characters")]
+        [StringLength(30,MinimumLength =8,ErrorMessage ="Password must be at least 8 characters")]
+        [PasswordCheck]
         public string Password { get; set; }
     }
 
