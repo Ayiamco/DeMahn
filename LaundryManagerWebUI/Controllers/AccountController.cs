@@ -31,7 +31,7 @@ namespace LaundryManagerWebUI.Controllers
             if (!ModelState.IsValid) return BadRequest();
 
             var result = await _authService.CreateLaundry(model);
-            if (result.Result == AuthServiceResult.Succeeded) return Ok(result.Data);
+            if (result.Result == AppServiceResult.Succeeded) return Ok(result.Data);
 
             return StatusCode(500);
         }
@@ -42,7 +42,7 @@ namespace LaundryManagerWebUI.Controllers
             if (!ModelState.IsValid) return BadRequest();
 
             var result = await _authService.Authenticate(model);
-            if (result.Result == AuthServiceResult.Succeeded) return Ok(result.Data);
+            if (result.Result == AppServiceResult.Succeeded) return Ok(result.Data);
 
             return BadRequest(result.Data);
 
@@ -53,14 +53,26 @@ namespace LaundryManagerWebUI.Controllers
         {
             var resp=await _authService.RefreshJWtToken(model);
 
-            if(resp.Result== AuthServiceResult.Succeeded)  return Ok(resp.Data);
+            if(resp.Result== AppServiceResult.Succeeded)  return Ok(resp.Data);
 
             return BadRequest(resp.Data);
         }
 
-        public async Task<IActionResult> forgotPassword([FromBody] LoginDto model)
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
         {
+            await _authService.SendResetPasswordLink(model.Username);
+
             return Ok();
+        }
+
+        [HttpPost("confirm-password-reset")]
+        public async Task<IActionResult> ResetPassword([FromBody] ConfirmPasswordResetDto model)
+        {
+           var resp= await _authService.ResetPassword(model);
+           if(resp.Result == AppServiceResult.Succeeded) return Ok(resp.Data);
+           if (resp.Result == AppServiceResult.Failed) return BadRequest(resp.Data);
+           return StatusCode(500);
         }
     }
 }

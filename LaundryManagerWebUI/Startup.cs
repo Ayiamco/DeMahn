@@ -21,6 +21,9 @@ using LaundryManagerWebUI.Interfaces;
 using LaundryManagerWebUI.Infrastructure;
 using LaundryManagerWebUI.Services;
 using LaundryManagerAPIDomain.Services.EmailService;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Http;
 
 namespace LaundryManagerWebUI
 {
@@ -50,14 +53,28 @@ namespace LaundryManagerWebUI
             services.AddIdentity<ApplicationUser, IdentityRole>(opt=>
             {
                 opt.User.RequireUniqueEmail = true;
-                opt.SignIn.RequireConfirmedEmail = true;
-            }).AddEntityFrameworkStores<ApplicationDbContext>();
+                //opt.SignIn.RequireConfirmedEmail = true;
+            }).AddEntityFrameworkStores<ApplicationDbContext>()
+              .AddDefaultTokenProviders();
 
+            services.Configure<DataProtectionTokenProviderOptions>(opt =>
+                opt.TokenLifespan = TimeSpan.FromMinutes(10));
+
+            //Email service configurations
             var emailConfig = Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>();
             services.AddSingleton(emailConfig);
-            services.AddSingleton<IJWTManager,JWTAuthManager>();
-
             services.AddScoped<IEmailSender, EmailSender>();
+
+            //configurations for form file size
+            services.Configure<FormOptions>(o => {
+                o.ValueLengthLimit = int.MaxValue;
+                o.MultipartBodyLengthLimit = int.MaxValue;
+                o.MemoryBufferThreshold = int.MaxValue;
+            });
+
+            services.AddHttpContextAccessor();
+            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<IJWTManager, JWTAuthManager>();
             services.AddScoped<ISaveChanges, UnitOfWork>();
             services.AddScoped<IJWTManager, JWTAuthManager>();
             services.AddScoped<IIdentityQuery, IdentityQuery>();

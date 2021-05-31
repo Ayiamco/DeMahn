@@ -9,11 +9,24 @@ using System.Threading.Tasks;
 
 namespace LaundryManagerWebUI.Dtos
 {
-    public class LoginDto
+    public class ConfirmPasswordResetDto:LoginDto
+    {
+        
+        [Compare("Password")]
+        public string ConfirmPassword { get; set; }
+
+        [Required]
+        public string PasswordToken { get; set; }
+
+
+    }
+    public class ForgotPasswordDto
     {
         [EmailAddress]
         public string Username { get; set; }
-
+    }
+    public class LoginDto:ForgotPasswordDto
+    {
         [StringLength(30,MinimumLength =8,ErrorMessage ="Password must be at least 8 characters")]
         [PasswordCheck]
         public string Password { get; set; }
