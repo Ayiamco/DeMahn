@@ -20,6 +20,7 @@ using LaundryManagerAPIDomain.Queries;
 using LaundryManagerWebUI.Interfaces;
 using LaundryManagerWebUI.Infrastructure;
 using LaundryManagerWebUI.Services;
+using LaundryManagerAPIDomain.Services.EmailService;
 
 namespace LaundryManagerWebUI
 {
@@ -40,18 +41,28 @@ namespace LaundryManagerWebUI
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "LaundryManagerApi", Version = "v1" });
             });
+
+            
             services.AddDbContext<ApplicationDbContext>(options =>
                         options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"),
                         b => b.MigrationsAssembly("LaundryManagerWebUI")));
            
-            services.AddIdentity<ApplicationUser, IdentityRole>()
-                .AddEntityFrameworkStores<ApplicationDbContext>();
+            services.AddIdentity<ApplicationUser, IdentityRole>(opt=>
+            {
+                opt.User.RequireUniqueEmail = true;
+                opt.SignIn.RequireConfirmedEmail = true;
+            }).AddEntityFrameworkStores<ApplicationDbContext>();
 
+            var emailConfig = Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>();
+            services.AddSingleton(emailConfig);
             services.AddSingleton<IJWTManager,JWTAuthManager>();
+
+            services.AddScoped<IEmailSender, EmailSender>();
             services.AddScoped<ISaveChanges, UnitOfWork>();
             services.AddScoped<IJWTManager, JWTAuthManager>();
             services.AddScoped<IIdentityQuery, IdentityQuery>();
             services.AddScoped<IAuthService, AuthService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -53,7 +53,7 @@ namespace LaundryManagerWebUI.Infrastructure
                 {
                     new Claim(ClaimTypes.PrimarySid, model.UserId),
                     new Claim(ClaimTypes.Role, model.UserRole),
-                    new Claim(ClaimTypes.Email, model.UserEmail)
+                    new Claim(ClaimTypes.Name, model.UserEmail),
                 }),
                 Expires = DateTime.UtcNow.AddSeconds(20),
                 SigningCredentials = new SigningCredentials(

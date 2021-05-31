@@ -44,7 +44,7 @@ namespace LaundryManagerWebUI.Controllers
             var result = await _authService.Authenticate(model);
             if (result.Result == AuthServiceResult.Succeeded) return Ok(result.Data);
 
-            return BadRequest();
+            return BadRequest(result.Data);
 
         }
 
@@ -56,6 +56,11 @@ namespace LaundryManagerWebUI.Controllers
             if(resp.Result== AuthServiceResult.Succeeded)  return Ok(resp.Data);
 
             return BadRequest(resp.Data);
+        }
+
+        public async Task<IActionResult> forgotPassword([FromBody] LoginDto model)
+        {
+            return Ok();
         }
     }
 }

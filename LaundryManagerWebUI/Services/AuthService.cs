@@ -110,8 +110,7 @@ namespace LaundryManagerWebUI.Services
             try
             {
                 var claim =_jwtmanager.GetPrincipalFromExpiredToken(model);
-                var claims = claim.Claims.ToList();
-                var user = await _userManager.FindByEmailAsync(claims[2].Value); 
+                var user = await _userManager.FindByEmailAsync(claim.Identity.Name); 
                 if (user.RefreshToken != model.RefreshToken) return new ResponseDto<AuthServiceResult, string>
                 {
                     Result = AuthServiceResult.Failed,
@@ -173,6 +172,7 @@ namespace LaundryManagerWebUI.Services
             }
         }
 
+        
         private async Task UpdateRefreshToken(ApplicationUser user)
         {
             var randomNumber = new byte[32];
