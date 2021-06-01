@@ -15,16 +15,13 @@ namespace LaundryManagerWebUI.Services
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly ILaundryQuery _laundryRepo;
-        private readonly IIdentityQuery _identityRepo;
         private readonly IMapper _mapper;
 
         public LaundryService(IUnitOfWork unitOfWork,
-            ILaundryQuery laundryRepo, IMapper mapper,
-            IIdentityQuery identityRepo)
+            ILaundryQuery laundryRepo, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _laundryRepo = laundryRepo;
-            _identityRepo = identityRepo;
             _mapper = mapper;
            
         }
@@ -66,7 +63,7 @@ namespace LaundryManagerWebUI.Services
 
                 };
             }
-            catch
+            catch(Exception e)
             {
                 //log error
                 return new ServiceResponse
