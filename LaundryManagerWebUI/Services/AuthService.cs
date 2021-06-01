@@ -20,7 +20,7 @@ namespace LaundryManagerWebUI.Services
 {
     public enum AppServiceResult
     {
-        Succeeded,Failed,Unknown
+        Succeeded,Failed,Unknown,Prohibited
     }
     public class AuthService : IAuthService
     {
@@ -28,14 +28,14 @@ namespace LaundryManagerWebUI.Services
         private readonly SignInManager<ApplicationUser> _signManager;
         private readonly IJWTManager _jwtmanager;
         private readonly IIdentityQuery _userRepo;
-        private readonly ISaveChanges _unitOFWork;
+        private readonly IUnitOfWork _unitOFWork;
         private readonly IEmailSender _mailService;
         private readonly IConfiguration _config;
         public AuthService(UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             IJWTManager jwtmanager,
             IIdentityQuery userRepo,
-            ISaveChanges unitOfWork,
+            IUnitOfWork unitOfWork,
             IEmailSender mailService,
             IConfiguration config
             )
@@ -49,7 +49,7 @@ namespace LaundryManagerWebUI.Services
             _config = config;
         }
 
-        public async Task<ResponseDto<AppServiceResult, string>> CreateLaundry(RegisterDto model)
+        public async Task<ServiceResponse> CreateLaundry(RegisterDto model)
         {
             var user = new ApplicationUser
             {
@@ -81,17 +81,17 @@ namespace LaundryManagerWebUI.Services
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(user, RoleNames.Owner);
-                return new ResponseDto<AppServiceResult, string> { };
+                return new ServiceResponse { };
             }
 
-            return new ResponseDto<AppServiceResult, string>
+            return new ServiceResponse
             {
 
             };
         }
 
 
-        public async Task<ResponseDto<AppServiceResult, string>> Authenticate(LoginDto model)
+        public async Task<ServiceResponse> Authenticate(LoginDto model)
         {
             var result = await _signManager.PasswordSignInAsync(model.Username, model.Password, false, false);
             if (result.Succeeded)
@@ -100,14 +100,14 @@ namespace LaundryManagerWebUI.Services
                 var userRole = _userRepo.GetUserRole(user);
                 var token = _jwtmanager.GetToken(new JWTDto { UserEmail = model.Username, UserId = user.Id, UserRole = userRole });
                 await UpdateRefreshToken(user);
-                return new ResponseDto<AppServiceResult, string>
+                return new ServiceResponse
                 {
                     Result = AppServiceResult.Succeeded,
                     Data = JsonConvert.SerializeObject(new { JwtToken = token, RefreshToken = user.RefreshToken }),
                 };
             }
 
-            return new ResponseDto<AppServiceResult, string>
+            return new ServiceResponse
             {
                 Result = AppServiceResult.Failed,
                 Data = JsonConvert.SerializeObject(new { Errors = "some error occurred" }),
@@ -115,13 +115,13 @@ namespace LaundryManagerWebUI.Services
 
         }
 
-        public async Task<ResponseDto<AppServiceResult, string>> RefreshJWtToken(JWTDto model)
+        public async Task<ServiceResponse> RefreshJWtToken(JWTDto model)
         {
             try
             {
                 var claim =_jwtmanager.GetPrincipalFromExpiredToken(model);
                 var user = await _userManager.FindByEmailAsync(claim.Identity.Name); 
-                if (user.RefreshToken != model.RefreshToken) return new ResponseDto<AppServiceResult, string>
+                if (user.RefreshToken != model.RefreshToken) return new ServiceResponse
                 {
                     Result = AppServiceResult.Failed,
                     Data = JsonConvert.SerializeObject(new
@@ -140,7 +140,7 @@ namespace LaundryManagerWebUI.Services
                 var newJwt = _jwtmanager.GetToken(model);
                 await UpdateRefreshToken(user);
 
-                return new ResponseDto<AppServiceResult, string>
+                return new ServiceResponse
                 {
                     Result = AppServiceResult.Succeeded,
                     Data = JsonConvert.SerializeObject(new
@@ -152,7 +152,7 @@ namespace LaundryManagerWebUI.Services
             }
             catch (SecurityTokenException)
             {
-                return new ResponseDto<AppServiceResult, string>
+                return new ServiceResponse
                 {
                     Result = AppServiceResult.Failed,
                     Data = JsonConvert.SerializeObject(new
@@ -167,9 +167,9 @@ namespace LaundryManagerWebUI.Services
             }
             catch
             {
-                return new ResponseDto<AppServiceResult, string>
+                return new ServiceResponse
                 {
-                    Result = AppServiceResult.Failed,
+                    Result = AppServiceResult.Unknown,
                     Data = JsonConvert.SerializeObject(new
                     {
                         Errors = new
@@ -194,11 +194,11 @@ namespace LaundryManagerWebUI.Services
 
         }
 
-        public async Task<ResponseDto<AppServiceResult,string>> ResetPassword(ConfirmPasswordResetDto model)
+        public async Task<ServiceResponse> ResetPassword(ConfirmPasswordResetDto model)
         {
 
             var user = await _userManager.FindByEmailAsync(model.Username);
-            if (user == null) return new ResponseDto<AppServiceResult, string>
+            if (user == null) return new ServiceResponse
             {
                 Result = AppServiceResult.Failed,
                 Data= JsonConvert.SerializeObject( new 
@@ -218,14 +218,14 @@ namespace LaundryManagerWebUI.Services
                 {
                     obj.Add(error.Code, new string[] { error.Description });
                 }
-                return new ResponseDto<AppServiceResult, string>
+                return new ServiceResponse
                 {
                     Result = AppServiceResult.Failed,
                     Data = JsonConvert.SerializeObject(new { Errors = obj })
                 };
             }
 
-            return new ResponseDto<AppServiceResult, string>
+            return new ServiceResponse
             {
                 Result=AppServiceResult.Succeeded,
                 Data= JsonConvert.SerializeObject( new { Message="Password change was successful."})

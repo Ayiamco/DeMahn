@@ -15,7 +15,6 @@ namespace LaundryManagerAPIDomain.Entities
         public string  Name { get; set; }
         public Location  Address { get; set; }
         public int AddressId { get; set; }
-        public int EmployeeCount { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
     }

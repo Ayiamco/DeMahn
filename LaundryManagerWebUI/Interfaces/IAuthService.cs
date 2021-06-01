@@ -6,10 +6,10 @@ namespace LaundryManagerWebUI.Interfaces
 {
     public interface IAuthService
     {
-        Task<ResponseDto<AppServiceResult, string>> Authenticate(LoginDto model);
-        Task<ResponseDto<AppServiceResult, string>> CreateLaundry(RegisterDto model);
-        Task<ResponseDto<AppServiceResult, string>> RefreshJWtToken(JWTDto model);
+        Task<ServiceResponse> Authenticate(LoginDto model);
+        Task<ServiceResponse> CreateLaundry(RegisterDto model);
+        Task<ServiceResponse> RefreshJWtToken(JWTDto model);
         Task SendResetPasswordLink(string username);
-        Task<ResponseDto<AppServiceResult, string>> ResetPassword(ConfirmPasswordResetDto model);
+        Task<ServiceResponse> ResetPassword(ConfirmPasswordResetDto model);
     }
 }

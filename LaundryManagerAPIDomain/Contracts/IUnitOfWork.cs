@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace LaundryManagerAPIDomain.Contracts
 {
-    public interface ISaveChanges
+    public interface IUnitOfWork
     {
         public Task SaveAsync();
         public void  Save();

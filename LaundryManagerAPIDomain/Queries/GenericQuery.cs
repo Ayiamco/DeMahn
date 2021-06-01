@@ -1,4 +1,5 @@
-﻿using LaundryManagerAPIDomain.Entities;
+﻿using LaundryManagerAPIDomain.Contracts;
+using LaundryManagerAPIDomain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,31 +9,31 @@ using System.Threading.Tasks;
 
 namespace LaundryManagerAPIDomain.Queries
 {
-    public abstract class GenericQuery<T1,T2> where T1:class
+    public abstract class GenericQuery<T1, T2> : IGenericQuery<T1, T2> where T1 : class
     {
-        protected ApplicationDbContext _context;
+        protected readonly ApplicationDbContext _context;
 
         public GenericQuery(ApplicationDbContext context)
         {
             _context = context;
         }
-        public  async Task  Create(T1 entity)
+        public async Task Create(T1 entity)
         {
-           await  _context.Set<T1>().AddAsync(entity);
-           return;
+            await _context.Set<T1>().AddAsync(entity);
+            return;
         }
         public async Task<T1> Read(T2 id)
         {
-           return await  _context.Set<T1>().FindAsync(id);
+            return await _context.Set<T1>().FindAsync(id);
         }
 
-        public void Delete (T1 entity)
+        public void Delete(T1 entity)
         {
             _context.Set<T1>().Remove(entity);
         }
- 
 
-        public IEnumerable<T1> GetAll(int pageSize=0,int currentPage=0)
+
+        public IEnumerable<T1> GetAll(int pageSize = 0, int currentPage = 0)
         {
             return _context.Set<T1>().Skip(currentPage * pageSize).Take(pageSize).AsQueryable().ToList();
         }

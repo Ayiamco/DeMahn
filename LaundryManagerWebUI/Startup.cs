@@ -75,10 +75,13 @@ namespace LaundryManagerWebUI
             services.AddHttpContextAccessor();
             services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IJWTManager, JWTAuthManager>();
-            services.AddScoped<ISaveChanges, UnitOfWork>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<IJWTManager, JWTAuthManager>();
             services.AddScoped<IIdentityQuery, IdentityQuery>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<ILaundryService, LaundryService>();
+            services.AddScoped<ILaundryQuery, LaundryQuery>();
+            services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
         }
 

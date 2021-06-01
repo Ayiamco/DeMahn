@@ -55,7 +55,7 @@ namespace LaundryManagerWebUI.Infrastructure
                     new Claim(ClaimTypes.Role, model.UserRole),
                     new Claim(ClaimTypes.Name, model.UserEmail),
                 }),
-                Expires = DateTime.UtcNow.AddSeconds(20),
+                Expires = DateTime.UtcNow.AddMinutes(20),
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(tokenKey), SecurityAlgorithms.HmacSha256)
             };

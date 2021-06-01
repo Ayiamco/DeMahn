@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LaundryManagerAPIDomain.Queries
 {
-    public class UnitOfWork:ISaveChanges
+    public class UnitOfWork:IUnitOfWork
     {
         private  ApplicationDbContext _context;
         public UnitOfWork(ApplicationDbContext _context )
