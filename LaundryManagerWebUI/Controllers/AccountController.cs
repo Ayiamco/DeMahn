@@ -45,8 +45,8 @@ namespace LaundryManagerWebUI.Controllers
 
             var result = await _authService.Authenticate(model);
             if (result.Result == AppServiceResult.Succeeded) return Ok(result.Data);
-
-            return BadRequest(result.Data);
+            if (result.Result == AppServiceResult.Failed) return BadRequest(result.Data);
+            return StatusCode(500,result.Data);
 
         }
 

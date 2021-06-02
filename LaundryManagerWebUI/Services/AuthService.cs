@@ -93,16 +93,15 @@ namespace LaundryManagerWebUI.Services
 
             return new ServiceResponse
             {
-
             };
         }
 
         public async Task<ServiceResponse> Authenticate(LoginDto model)
         {
+            var user = await _userManager.FindByEmailAsync(model.Username);
             var result = await _signManager.PasswordSignInAsync(model.Username, model.Password, false, false);
             if (result.Succeeded)
-            {
-                var user = await _userManager.FindByEmailAsync(model.Username);
+            {  
                 var userRole = _userRepo.GetUserRole(user);
                 var token = _jwtmanager.GetToken(new JWTDto { UserEmail = model.Username, UserId = user.Id, UserRole = userRole });
                 var laundry = await laundryRepo.GetLaundryByUserId(new Guid(user.Id));
@@ -110,20 +109,35 @@ namespace LaundryManagerWebUI.Services
                 return new ServiceResponse
                 {
                     Result = AppServiceResult.Succeeded,
-                    Data = JsonConvert.SerializeObject(new { 
-                        JwtToken = token,
-                        RefreshToken = user.RefreshToken,
-                        LaundryName = laundry.Name,
-                        LaundryId= laundry.Id
+                    Data = JsonConvert.SerializeObject(new { data = new
+                    {
+                        jwtToken = token,
+                        refreshToken = user.RefreshToken,
+                        laundryName = laundry.Name,
+                        laundryId = laundry.Id
 
-                    }),
+                    }}),
                 };
             }
+            if(user== null) return new ServiceResponse
+            {
+                Result = AppServiceResult.Failed,
+                Data = JsonConvert.SerializeObject(new 
+                { errors =  new { username= new string[] { "user does not exist" } } }),
+            }; ;
+
+            if (user != null && !result.IsLockedOut && !result.IsNotAllowed) return new ServiceResponse
+            {
+                Result = AppServiceResult.Failed,
+                Data = JsonConvert.SerializeObject(new
+                { errors = new { password = new string[] { "password is incorrect" } } }),
+            };
 
             return new ServiceResponse
             {
-                Result = AppServiceResult.Failed,
-                Data = JsonConvert.SerializeObject(new { Errors = "some error occurred" }),
+                Result = AppServiceResult.Unknown,
+                Data = JsonConvert.SerializeObject(new
+                { errors = new { server = new string[] { "internal server error" } } }),
             }; ;
 
         }
@@ -139,7 +153,7 @@ namespace LaundryManagerWebUI.Services
                     Result = AppServiceResult.Failed,
                     Data = JsonConvert.SerializeObject(new
                     {
-                        Errors = new
+                        errors = new
                         {
                             refreshToken = new string[] { "refresh token has being changed, go to login" }
                         },
@@ -158,8 +172,11 @@ namespace LaundryManagerWebUI.Services
                     Result = AppServiceResult.Succeeded,
                     Data = JsonConvert.SerializeObject(new
                     {
-                        JwtToken= newJwt,
-                        RefreshToken=user.RefreshToken
+                        data = new
+                        {
+                            jwtToken = newJwt,
+                            refreshToken = user.RefreshToken
+                        }
                     })
                 };
             }
@@ -170,9 +187,9 @@ namespace LaundryManagerWebUI.Services
                     Result = AppServiceResult.Failed,
                     Data = JsonConvert.SerializeObject(new
                     {
-                        Errors = new 
+                        errors = new 
                         { 
-                            JwtToken=  new string[] { "Invalid jwt token" }
+                            jwtToken=  new string[] { "Invalid jwt token" }
                         },
                        
                     })
@@ -185,9 +202,9 @@ namespace LaundryManagerWebUI.Services
                     Result = AppServiceResult.Unknown,
                     Data = JsonConvert.SerializeObject(new
                     {
-                        Errors = new
+                        errors = new
                         {
-                            ServerError = new string[] { "Unknown server error occured" }
+                            serverError = new string[] { "Unknown server error occured" }
                         },
 
                     })
@@ -214,9 +231,9 @@ namespace LaundryManagerWebUI.Services
                 Result = AppServiceResult.Failed,
                 Data= JsonConvert.SerializeObject( new 
                 {
-                    Errors = new
+                    errors = new
                     {
-                        Email = new string[] { "User does not exist" }
+                       username = new string[] { "User does not exist" }
                     },
                 })
             };
@@ -232,18 +249,17 @@ namespace LaundryManagerWebUI.Services
                 return new ServiceResponse
                 {
                     Result = AppServiceResult.Failed,
-                    Data = JsonConvert.SerializeObject(new { Errors = obj })
+                    Data = JsonConvert.SerializeObject(new { errors = obj })
                 };
             }
 
             return new ServiceResponse
             {
                 Result=AppServiceResult.Succeeded,
-                Data= JsonConvert.SerializeObject( new { Message="Password change was successful."})
+                Data= JsonConvert.SerializeObject( new {  message="Password change was successful."})
             };
         }
 
-       
         private async Task UpdateRefreshToken(ApplicationUser user)
         {
             var randomNumber = new byte[32];
