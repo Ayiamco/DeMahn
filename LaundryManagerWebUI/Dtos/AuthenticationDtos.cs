@@ -20,12 +20,12 @@ namespace LaundryManagerWebUI.Dtos
 
 
     }
-    public class ForgotPasswordDto
+    public class EmailDto
     {
         [EmailAddress]
         public string Username { get; set; }
     }
-    public class LoginDto:ForgotPasswordDto
+    public class LoginDto:EmailDto
     {
         [StringLength(30,MinimumLength =8,ErrorMessage ="Password must be at least 8 characters")]
         [PasswordCheck]
@@ -49,5 +49,30 @@ namespace LaundryManagerWebUI.Dtos
         public string JwtToken { get; set; }
         public string UserRole { get; set; }
         public string UserEmail { get; set; }
+    }
+
+    public class EmployeeInTransitDto
+    {
+
+        [Required]
+        [EmailAddress]
+        public string Username { get; set; }
+
+        [Required]
+        public Guid LaundryId { get; set; }
+
+        [Required]
+        public string LaundryName { get; set; }
+
+    }
+
+    public class NewEmployeeDto:LoginDto
+    {
+        public Guid Id { get; set; }
+
+        [Compare("Password")]
+        public string ConfirmPassword { get; set; }
+
+        public string Name { get; set; }
     }
 }

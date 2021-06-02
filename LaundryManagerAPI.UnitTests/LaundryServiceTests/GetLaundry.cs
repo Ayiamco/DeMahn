@@ -71,7 +71,7 @@ namespace LaundryManagerAPI.UnitTests.LaundryServiceTests
 
 
         [Test]
-        public async Task IdIsLaundryIdAndLaundryExist_ReturnsAppServiceSucceeded()
+        public async Task IdIsLaundryIdAndLaundryExist_ReturnsAppServiceSucceedede()
         {
             //Arrange
             _laundryRepo.Setup(r => r.Read(dummyLaundryId)).ReturnsAsync(dummyLaundry);

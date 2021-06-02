@@ -36,6 +36,8 @@ namespace LaundryManagerWebUI.Controllers
             return StatusCode(500);
         }
 
+        
+
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginDto model)
         {
@@ -59,7 +61,7 @@ namespace LaundryManagerWebUI.Controllers
         }
 
         [HttpPost("reset-password")]
-        public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordDto model)
+        public async Task<IActionResult> ForgotPassword([FromBody] EmailDto model)
         {
             await _authService.SendResetPasswordLink(model.Username);
 

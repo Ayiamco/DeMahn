@@ -109,8 +109,10 @@ namespace LaundryManagerWebUI
             services.AddScoped<IJWTManager, JWTAuthManager>();
             services.AddScoped<IIdentityQuery, IdentityQuery>();
             services.AddScoped<IAuthService, AuthService>();
+            services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<ILaundryService, LaundryService>();
             services.AddScoped<ILaundryQuery, LaundryQuery>();
+            services.AddScoped<IEmployeeInTransitQuery, EmployeeInTransitQuery>();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
         }

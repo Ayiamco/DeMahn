@@ -31,13 +31,18 @@ namespace LaundryManagerWebUI.Services
         private readonly IUnitOfWork _unitOFWork;
         private readonly IEmailSender _mailService;
         private readonly IConfiguration _config;
+        private readonly IEmployeeInTransitQuery _employeeInTransitRepo;
+        private readonly ILaundryQuery laundryRepo;
+
         public AuthService(UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
             IJWTManager jwtmanager,
             IIdentityQuery userRepo,
             IUnitOfWork unitOfWork,
             IEmailSender mailService,
-            IConfiguration config
+            IConfiguration config,
+            IEmployeeInTransitQuery employeeInTransitRepo,
+            ILaundryQuery laundryRepo
             )
         {
             _userManager = userManager;
@@ -47,6 +52,8 @@ namespace LaundryManagerWebUI.Services
             _unitOFWork = unitOfWork;
             _mailService = mailService;
             _config = config;
+            _employeeInTransitRepo = employeeInTransitRepo;
+            this.laundryRepo = laundryRepo;
         }
 
         public async Task<ServiceResponse> CreateLaundry(RegisterDto model)
@@ -90,7 +97,6 @@ namespace LaundryManagerWebUI.Services
             };
         }
 
-
         public async Task<ServiceResponse> Authenticate(LoginDto model)
         {
             var result = await _signManager.PasswordSignInAsync(model.Username, model.Password, false, false);
@@ -99,11 +105,18 @@ namespace LaundryManagerWebUI.Services
                 var user = await _userManager.FindByEmailAsync(model.Username);
                 var userRole = _userRepo.GetUserRole(user);
                 var token = _jwtmanager.GetToken(new JWTDto { UserEmail = model.Username, UserId = user.Id, UserRole = userRole });
+                var laundry = await laundryRepo.GetLaundryByUserId(new Guid(user.Id));
                 await UpdateRefreshToken(user);
                 return new ServiceResponse
                 {
                     Result = AppServiceResult.Succeeded,
-                    Data = JsonConvert.SerializeObject(new { JwtToken = token, RefreshToken = user.RefreshToken }),
+                    Data = JsonConvert.SerializeObject(new { 
+                        JwtToken = token,
+                        RefreshToken = user.RefreshToken,
+                        LaundryName = laundry.Name,
+                        LaundryId= laundry.Id
+
+                    }),
                 };
             }
 
@@ -186,12 +199,10 @@ namespace LaundryManagerWebUI.Services
         {
             var user = await _userManager.FindByEmailAsync(username);
             var passwordresetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
-            var url = _config["ClientUrl"] + $"?passwordToken={passwordresetToken},username={user.Email}";
+            var url = _config[AppConstants.ClientBaseUrl] + $"account/confirm-password-reset/?passwordToken={passwordresetToken},username={user.Email}";
             await _mailService.SendEmailAsync(new Message(new List<string> { username },"Password Reset",
                 $"<h3>Hi<h3>, <p>Please click <a href={url}>here</a>. Link expires in 10 mins"),
                 IsHTML:true);
-
-
         }
 
         public async Task<ServiceResponse> ResetPassword(ConfirmPasswordResetDto model)
@@ -231,6 +242,8 @@ namespace LaundryManagerWebUI.Services
                 Data= JsonConvert.SerializeObject( new { Message="Password change was successful."})
             };
         }
+
+       
         private async Task UpdateRefreshToken(ApplicationUser user)
         {
             var randomNumber = new byte[32];

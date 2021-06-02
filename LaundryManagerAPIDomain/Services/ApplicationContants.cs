@@ -15,5 +15,6 @@ namespace LaundryManagerAPIDomain.Services
     public class AppConstants
     {
         public const string AuthSigningKey = "authKey";
+        public const string ClientBaseUrl = "ClientUrl";
     }
 }
