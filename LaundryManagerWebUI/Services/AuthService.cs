@@ -69,7 +69,7 @@ namespace LaundryManagerWebUI.Services
                         {
                             State = model.Address.State,
                             LGA = model.Address.State,
-                            Country = "Nigeria",
+                            Country = model.Address.Country,
                             Street = model.Address.Street
                         }
 

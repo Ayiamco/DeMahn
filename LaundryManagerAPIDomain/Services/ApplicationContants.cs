@@ -9,5 +9,11 @@ namespace LaundryManagerAPIDomain.Services
         public const string Owner = "Owner";
         public const string Employee = "Employee";
         public const string Admin = "Admin";
+
+    }
+
+    public class AppConstants
+    {
+        public const string AuthSigningKey = "authKey";
     }
 }

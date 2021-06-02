@@ -16,6 +16,7 @@ namespace LaundryManagerAPIDomain.Queries
 
         }
 
+        
         public async Task<Laundry> GetLaundryByUserId(Guid userId)
         {
            var user=  await _context.Set<ApplicationUser>()

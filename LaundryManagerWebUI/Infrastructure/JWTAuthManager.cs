@@ -1,4 +1,5 @@
-﻿using LaundryManagerWebUI.Dtos;
+﻿using LaundryManagerAPIDomain.Services;
+using LaundryManagerWebUI.Dtos;
 using LaundryManagerWebUI.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
@@ -17,7 +18,7 @@ namespace LaundryManagerWebUI.Infrastructure
         private string _signingKey;
         public JWTAuthManager(IConfiguration config)
         {
-            this._signingKey = config["authKey"];
+            this._signingKey = config[AppConstants.AuthSigningKey];
         }
         public ClaimsPrincipal GetPrincipalFromExpiredToken(JWTDto model)
         {

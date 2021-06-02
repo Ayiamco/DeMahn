@@ -32,7 +32,7 @@ namespace LaundryManagerWebUI.Services
             {
                 Laundry laundry;
                 if (IsIdentityId) laundry = await _laundryRepo.GetLaundryByUserId(id);
-                else laundry = await _laundryRepo.Read(id);
+                else laundry =  await _laundryRepo.Read(id);
 
                 if (laundry == null) return new ServiceResponse
                 {

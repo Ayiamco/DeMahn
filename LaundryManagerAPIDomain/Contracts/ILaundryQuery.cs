@@ -7,5 +7,6 @@ namespace LaundryManagerAPIDomain.Contracts
     public interface ILaundryQuery: IGenericQuery<Laundry,Guid>
     {
         Task<Laundry> GetLaundryByUserId(Guid userId);
+       
     }
 }
