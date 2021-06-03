@@ -1,5 +1,6 @@
 ﻿using LaundryManagerAPIDomain.Contracts;
 using LaundryManagerAPIDomain.Entities;
+using LaundryManagerAPIDomain.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,11 @@ using System.Text;
 
 namespace LaundryManagerAPIDomain.Queries
 {
+    public class LaundryEmployeeDto
+    {
+        public string Username { get; set; }
+        public string RoleId { get; set; }
+    }
     public class IdentityQuery : IIdentityQuery
     {
         private ApplicationDbContext _context;
@@ -25,7 +31,13 @@ namespace LaundryManagerAPIDomain.Queries
             return string.Join(",", userRoles);
         }
 
-        
+        public IEnumerable<string> GetLaundryEmployeesEmail(Guid laundryId)
+        {
+            var employeeEmails = _context.Users.Where(x => x.LaundryId == laundryId).AsQueryable()?
+                .ToList().Select(x => x.UserName);
+            return employeeEmails;
+                
+        }
 
     }
 }

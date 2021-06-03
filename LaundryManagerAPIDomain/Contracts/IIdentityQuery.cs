@@ -8,5 +8,6 @@ namespace LaundryManagerAPIDomain.Contracts
     public interface IIdentityQuery
     {
         public string GetUserRole(ApplicationUser user);
+        IEnumerable<string> GetLaundryEmployeesEmail(Guid laundryId);
     }
 }
