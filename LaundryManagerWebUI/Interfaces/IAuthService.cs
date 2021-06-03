@@ -11,5 +11,6 @@ namespace LaundryManagerWebUI.Interfaces
         Task<ServiceResponse> RefreshJWtToken(JWTDto model);
         Task SendResetPasswordLink(string username);
         Task<ServiceResponse> ResetPassword(ConfirmPasswordResetDto model);
+        Task<ServiceResponse> AddEmployee(NewEmployeeDto model);
     }
 }

@@ -20,12 +20,11 @@ namespace LaundryManagerAPIDomain.Queries
         public async Task<Laundry> GetLaundryByUserId(Guid userId)
         {
            var user=  await _context.Set<ApplicationUser>()
-                .Include(x=> x.Profile)
-                .ThenInclude(x=>x.Laundry)
+                .Include(x=> x.Laundry)
                 .ThenInclude(x=>x.Address)
                 .AsQueryable()
                 .FirstAsync(x=> x.Id==userId.ToString());
-            return user?.Profile?.Laundry;
+            return user?.Laundry;
         }
     }
 }

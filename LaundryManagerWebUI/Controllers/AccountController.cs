@@ -76,5 +76,12 @@ namespace LaundryManagerWebUI.Controllers
            if (resp.Result == AppServiceResult.Failed) return BadRequest(resp.Data);
            return StatusCode(500);
         }
+
+        [HttpPost("employee/new")]
+        public async Task<IActionResult> RegisterEmployee(NewEmployeeDto dto)
+        {
+            await _authService.AddEmployee(dto);
+            return Ok();
+        }
     }
 }

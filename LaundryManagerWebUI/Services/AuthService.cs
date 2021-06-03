@@ -1,4 +1,5 @@
-﻿using LaundryManagerAPIDomain.Contracts;
+﻿using AutoMapper;
+using LaundryManagerAPIDomain.Contracts;
 using LaundryManagerAPIDomain.Entities;
 using LaundryManagerAPIDomain.Services;
 using LaundryManagerAPIDomain.Services.EmailService;
@@ -33,6 +34,7 @@ namespace LaundryManagerWebUI.Services
         private readonly IConfiguration _config;
         private readonly IEmployeeInTransitQuery _employeeInTransitRepo;
         private readonly ILaundryQuery laundryRepo;
+        private readonly IMapper mapper;
 
         public AuthService(UserManager<ApplicationUser> userManager,
             SignInManager<ApplicationUser> signInManager,
@@ -42,7 +44,8 @@ namespace LaundryManagerWebUI.Services
             IEmailSender mailService,
             IConfiguration config,
             IEmployeeInTransitQuery employeeInTransitRepo,
-            ILaundryQuery laundryRepo
+            ILaundryQuery laundryRepo,
+            IMapper mapper
             )
         {
             _userManager = userManager;
@@ -54,6 +57,7 @@ namespace LaundryManagerWebUI.Services
             _config = config;
             _employeeInTransitRepo = employeeInTransitRepo;
             this.laundryRepo = laundryRepo;
+            this.mapper = mapper;
         }
 
         public async Task<ServiceResponse> CreateLaundry(RegisterDto model)
@@ -66,21 +70,21 @@ namespace LaundryManagerWebUI.Services
                 {
                     Name = model.OwnerName,
                     CreatedAt = DateTime.Now,
+                    UpdatedAt = DateTime.Now
+                },
+                Laundry = new Laundry
+                {
+                    Name = model.LaundryName,
+                    CreatedAt = DateTime.Now,
                     UpdatedAt = DateTime.Now,
-                    Laundry = new Laundry
+                    Address = new Location
                     {
-                        Name = model.LaundryName,
-                        CreatedAt = DateTime.Now,
-                        UpdatedAt = DateTime.Now,
-                        Address = new Location
-                        {
-                            State = model.Address.State,
-                            LGA = model.Address.State,
-                            Country = model.Address.Country,
-                            Street = model.Address.Street
-                        }
-
+                        State = model.Address.State,
+                        LGA = model.Address.State,
+                        Country = model.Address.Country,
+                        Street = model.Address.Street
                     }
+
                 }
             };
 
@@ -244,7 +248,8 @@ namespace LaundryManagerWebUI.Services
             {
                 foreach (var error in resetPassResult.Errors)
                 {
-                    obj.Add(error.Code, new string[] { error.Description });
+                    if (obj.ContainsKey(error.Code)) obj[error.Code] = (string[])obj[error.Code].Append(error.Description);
+                    else obj.Add(error.Code, new string[] { error.Description });
                 }
                 return new ServiceResponse
                 {
@@ -260,6 +265,41 @@ namespace LaundryManagerWebUI.Services
             };
         }
 
+        public async Task<ServiceResponse> AddEmployee(NewEmployeeDto model)
+        {
+            var empInTransit=_employeeInTransitRepo.Find(x => x.Username == model.Username)
+                .AsQueryable().SingleOrDefault();
+            
+            if (empInTransit == null || empInTransit.Id != model.Id) return new ServiceResponse
+            {
+                Result= AppServiceResult.Failed,
+                Data= JsonConvert.SerializeObject(new
+                {
+                    errors= new
+                    { 
+                        Username= new string[] {"user has not being added by laundry owner"}
+                    }
+                    
+                })
+            };
+
+            var user= mapper.Map<ApplicationUser>(model);
+            user.LaundryId = empInTransit.LaundryId;
+            user.Profile = new UserProfile {Name=model.Name };
+            var result=await _userManager.CreateAsync(user, model.Password);
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(user, RoleNames.Employee);
+                return new ServiceResponse
+                {
+                    Result = AppServiceResult.Succeeded
+                };
+            }
+
+
+            return new ServiceResponse() { Result= AppServiceResult.Failed};
+        }
+
         private async Task UpdateRefreshToken(ApplicationUser user)
         {
             var randomNumber = new byte[32];
@@ -270,6 +310,8 @@ namespace LaundryManagerWebUI.Services
                 await _unitOFWork.SaveAsync();
             }
         }
+
+        
     }
 
 }
