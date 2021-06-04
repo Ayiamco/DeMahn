@@ -92,11 +92,14 @@ namespace LaundryManagerWebUI.Services
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(user, RoleNames.Owner);
-                return new ServiceResponse { };
+                return new ServiceResponse { Result= AppServiceResult.Succeeded,
+                    Data= user.Laundry.Id.ToString() };
             }
 
             return new ServiceResponse
             {
+                Result=AppServiceResult.Failed,
+                Data= JsonConvert.SerializeObject( new { errors = GetErrors(result.Errors)})
             };
         }
 
@@ -118,7 +121,8 @@ namespace LaundryManagerWebUI.Services
                         jwtToken = token,
                         refreshToken = user.RefreshToken,
                         laundryName = laundry.Name,
-                        laundryId = laundry.Id
+                        laundryId = laundry.Id,
+                        id=user.Id
 
                     }}),
                 };
@@ -243,18 +247,12 @@ namespace LaundryManagerWebUI.Services
             };
                 
             var resetPassResult = await _userManager.ResetPasswordAsync(user, model.PasswordToken, model.Password);
-            var obj = new Dictionary<string, string[]>();
             if (!resetPassResult.Succeeded)
             {
-                foreach (var error in resetPassResult.Errors)
-                {
-                    if (obj.ContainsKey(error.Code)) obj[error.Code] = (string[])obj[error.Code].Append(error.Description);
-                    else obj.Add(error.Code, new string[] { error.Description });
-                }
                 return new ServiceResponse
                 {
                     Result = AppServiceResult.Failed,
-                    Data = JsonConvert.SerializeObject(new { errors = obj })
+                    Data = JsonConvert.SerializeObject(new { errors = GetErrors(resetPassResult.Errors) })
                 };
             }
 
@@ -311,7 +309,16 @@ namespace LaundryManagerWebUI.Services
             }
         }
 
-        
+        private Dictionary<string,string[]> GetErrors(IEnumerable<IdentityError> errors)
+        {
+            var obj = new Dictionary<string, string[]>();
+            foreach (var error in errors)
+            {
+                if (obj.ContainsKey(error.Code)) obj[error.Code] = (string[])obj[error.Code].Append(error.Description);
+                else obj.Add(error.Code, new string[] { error.Description });
+            }
+            return obj;
+        }
     }
 
 }

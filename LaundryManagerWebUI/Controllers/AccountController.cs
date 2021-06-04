@@ -31,7 +31,9 @@ namespace LaundryManagerWebUI.Controllers
             if (!ModelState.IsValid) return BadRequest();
 
             var result = await _authService.CreateLaundry(model);
-            if (result.Result == AppServiceResult.Succeeded) return Ok(result.Data);
+            var laundryId = result.Data;
+            if (result.Result == AppServiceResult.Succeeded) return CreatedAtAction("Get","Laundry", null, null);
+            if (result.Result == AppServiceResult.Failed) return BadRequest(result.Data);
 
             return StatusCode(500);
         }

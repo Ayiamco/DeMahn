@@ -28,7 +28,7 @@ namespace LaundryManagerWebUI.Controllers
             _laundryService = laundryService;
         }
 
-        [HttpGet]
+        [HttpGet("{id}")]
         public async Task<IActionResult> Get(string id)
         {
             ServiceResponse resp;
