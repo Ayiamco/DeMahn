@@ -9,7 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using LaundryManagerWebUI.Interfaces; 
+using LaundryManagerWebUI.Interfaces;
+using AutoMapper;
 
 namespace LaundryManagerWebUI.Services
 {
@@ -19,23 +20,26 @@ namespace LaundryManagerWebUI.Services
         private readonly IUnitOfWork _unitOfWork;
         private readonly IConfiguration _config;
         private readonly IEmailSender _mailService;
-        private readonly IIdentityQuery identityRepo;
+        private readonly IIdentityQuery _identityRepo;
+        private readonly IMapper _mapper;
 
         public EmployeeService(IEmployeeInTransitQuery emploeyeeInTransitRepo,
             IUnitOfWork unitOfWork,
             IConfiguration config,
             IEmailSender mailService,
-            IIdentityQuery IdentityRepo)
+            IIdentityQuery IdentityRepo,
+            IMapper mapper)
         {
             _employeeInTransitRepo = emploeyeeInTransitRepo;
             _unitOfWork = unitOfWork;
             _config = config;
             _mailService = mailService;
-            identityRepo = IdentityRepo;
+            _identityRepo = IdentityRepo;
+            _mapper = mapper;
         }
         public async Task<ServiceResponse> AddEmployeeToTransit(EmployeeInTransitDto model)
         {
-            var currentLaundryEmployeesEmail = identityRepo.GetLaundryEmployeesEmail(model.LaundryId);
+            var currentLaundryEmployeesEmail = _identityRepo.GetLaundryEmployeesEmail(model.LaundryId);
             if (currentLaundryEmployeesEmail.Contains(model.Username)) return new ServiceResponse
             {
                 Result = AppServiceResult.Failed,
@@ -64,6 +68,29 @@ namespace LaundryManagerWebUI.Services
                     Message = "Employee registration link sent successfully"
                 })
             };
+        }
+
+        public ServiceResponse GetEmployee(string userId)
+        {
+            var user = _identityRepo.GetUserWithProfile(userId);
+            if(user == null) return new ServiceResponse
+            {
+                Result=AppServiceResult.Failed,
+                Data= JsonConvert.SerializeObject(new
+                {
+                    errors = new { userId = new string[] { "user was not found" } }
+                })
+             };
+
+            return new ServiceResponse
+            {
+                Result = AppServiceResult.Succeeded,
+                Data = JsonConvert.SerializeObject(new
+                {
+                   data = _mapper.Map<EmployeeDto>(user)
+                })
+            };
+            
         }
     }
 }

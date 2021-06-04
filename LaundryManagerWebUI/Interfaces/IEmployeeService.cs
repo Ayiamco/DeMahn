@@ -6,5 +6,6 @@ namespace LaundryManagerWebUI.Interfaces
     public interface IEmployeeService
     {
         Task<ServiceResponse> AddEmployeeToTransit(EmployeeInTransitDto model);
+        ServiceResponse GetEmployee(string userId);
     }
 }

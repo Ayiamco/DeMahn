@@ -71,6 +71,7 @@ namespace LaundryManagerWebUI.Controllers
         [HttpPost("confirm-password-reset")]
         public async Task<IActionResult> ResetPassword([FromBody] ConfirmPasswordResetDto model)
         {
+           if (!ModelState.IsValid) return BadRequest();
            var resp= await _authService.ResetPassword(model);
            if(resp.Result == AppServiceResult.Succeeded) return Ok(resp.Data);
            if (resp.Result == AppServiceResult.Failed) return BadRequest(resp.Data);
@@ -80,8 +81,12 @@ namespace LaundryManagerWebUI.Controllers
         [HttpPost("employee/new")]
         public async Task<IActionResult> RegisterEmployee(NewEmployeeDto dto)
         {
-            await _authService.AddEmployee(dto);
-            return Ok();
+            if (!ModelState.IsValid) return BadRequest();
+            var resp=await _authService.AddEmployee(dto);
+            if (resp.Result == AppServiceResult.Succeeded) return Ok(resp.Data);
+            if (resp.Result == AppServiceResult.Failed) return BadRequest(resp.Data);
+
+            return StatusCode(500);
         }
     }
 }

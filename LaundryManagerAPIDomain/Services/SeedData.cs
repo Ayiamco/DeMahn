@@ -29,8 +29,8 @@ namespace LaundryManagerAPIDomain.Services
                 await roleManager.CreateAsync(new IdentityRole(RoleNames.Owner));
 
                 var user = new ApplicationUser { UserName = config["AdminEmail"], Email = config["AdminEmail"] };
-                await userManager.CreateAsync(user, config["AdminPassword"]);
-                await userManager.AddToRoleAsync(user, RoleNames.Admin);
+                //await userManager.CreateAsync(user, config["AdminPassword"]);
+                //await userManager.AddToRoleAsync(user, RoleNames.Admin);
             }
         }
     }

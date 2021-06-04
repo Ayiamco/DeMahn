@@ -13,6 +13,7 @@ namespace LaundryManagerWebUI.Infrastructure
         public AutoMapperProfile()
         {
             CreateMap<Laundry, LaundryDto>();
+            CreateMap<ApplicationUser, EmployeeDto>();
             CreateMap<NewEmployeeDto, ApplicationUser>()
                 .ForMember(x => x.Email, y => y.MapFrom(x => x.Username));
         }

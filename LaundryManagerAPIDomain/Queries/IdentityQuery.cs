@@ -1,11 +1,13 @@
 ﻿using LaundryManagerAPIDomain.Contracts;
 using LaundryManagerAPIDomain.Entities;
 using LaundryManagerAPIDomain.Services;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace LaundryManagerAPIDomain.Queries
 {
@@ -37,6 +39,16 @@ namespace LaundryManagerAPIDomain.Queries
                 .ToList().Select(x => x.UserName);
             return employeeEmails;
                 
+        }
+
+        public ApplicationUser GetUserWithProfile(string userId)
+        {
+            var user = _context.Set<ApplicationUser>()
+                .Include(x=>x.Profile)
+                .ThenInclude(x=> x.Address)
+                .Where(x=> x.Id==userId)
+                .AsQueryable().SingleOrDefault();
+            return user;
         }
 
     }

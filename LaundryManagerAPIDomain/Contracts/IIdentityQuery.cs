@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace LaundryManagerAPIDomain.Contracts
 {
@@ -9,5 +10,6 @@ namespace LaundryManagerAPIDomain.Contracts
     {
         public string GetUserRole(ApplicationUser user);
         IEnumerable<string> GetLaundryEmployeesEmail(Guid laundryId);
+        ApplicationUser GetUserWithProfile(string userId);
     }
 }
