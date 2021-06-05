@@ -13,5 +13,6 @@ namespace LaundryManagerWebUI.Dtos
         public string Name { get; set; }
         public Location Address { get; set; }
         public Gender Gender { get; set; }
+        public string UserId { get; set; }
     }
 }

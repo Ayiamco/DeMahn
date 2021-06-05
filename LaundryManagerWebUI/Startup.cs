@@ -112,6 +112,7 @@ namespace LaundryManagerWebUI
             services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<ILaundryService, LaundryService>();
             services.AddScoped<ILaundryQuery, LaundryQuery>();
+            services.AddScoped<IUserProfileQuery,UserProfileQuery>();
             services.AddScoped<IEmployeeInTransitQuery, EmployeeInTransitQuery>();
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

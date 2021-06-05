@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using LaundryManagerAPIDomain.Services;
 using Newtonsoft.Json;
 using System.Security.Claims;
+using LaundryManagerWebUI.Infrastructure;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -76,6 +77,11 @@ namespace LaundryManagerWebUI.Controllers
         {
             try
             {
+                var userId = this.GetIdentityUserId();
+                if (userId != profile.UserId) return Unauthorized(JsonConvert.SerializeObject(new
+                { 
+                    errors= new { role= new string[] { "user is not permitted to alter another users profile"} }
+                }));
                 if (!ModelState.IsValid) return BadRequest();
                 var resp = await employeeService.UpdateEmployeeProfile(profile);
                 if (resp.Result == AppServiceResult.Succeeded) return Ok(resp.Data);
@@ -92,4 +98,6 @@ namespace LaundryManagerWebUI.Controllers
            
         }
     }
+
+   
 }
