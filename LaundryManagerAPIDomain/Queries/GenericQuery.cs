@@ -31,6 +31,10 @@ namespace LaundryManagerAPIDomain.Queries
         {
             _context.Set<T1>().Remove(entity);
         }
+        public void Update(T1 entity)
+        {
+            _context.Set<T1>().Update(entity);
+        }
 
 
         public IEnumerable<T1> GetAll(int pageSize = 0, int currentPage = 0)

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using LaundryManagerAPIDomain.Entities;
+using System;
 using System.Collections.Generic;
 using System.Text;
 

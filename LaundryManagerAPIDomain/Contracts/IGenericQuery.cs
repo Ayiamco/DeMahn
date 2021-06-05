@@ -12,5 +12,6 @@ namespace LaundryManagerAPIDomain.Contracts
         IEnumerable<T1> Find(Expression<Func<T1, bool>> func_predicate);
         IEnumerable<T1> GetAll(int pageSize = 0, int currentPage = 0);
         Task<T1> Read(T2 id);
+        void Update(T1 entity);
     }
 }

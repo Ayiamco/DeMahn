@@ -22,13 +22,15 @@ namespace LaundryManagerWebUI.Services
         private readonly IEmailSender _mailService;
         private readonly IIdentityQuery _identityRepo;
         private readonly IMapper _mapper;
+        private readonly IUserProfileQuery _userProfileRepo;
 
         public EmployeeService(IEmployeeInTransitQuery emploeyeeInTransitRepo,
             IUnitOfWork unitOfWork,
             IConfiguration config,
             IEmailSender mailService,
             IIdentityQuery IdentityRepo,
-            IMapper mapper)
+            IMapper mapper,
+            IUserProfileQuery userProfileRepo)
         {
             _employeeInTransitRepo = emploeyeeInTransitRepo;
             _unitOfWork = unitOfWork;
@@ -36,6 +38,7 @@ namespace LaundryManagerWebUI.Services
             _mailService = mailService;
             _identityRepo = IdentityRepo;
             _mapper = mapper;
+            _userProfileRepo = userProfileRepo;
         }
         public async Task<ServiceResponse> AddEmployeeToTransit(EmployeeInTransitDto model)
         {
@@ -91,6 +94,45 @@ namespace LaundryManagerWebUI.Services
                 })
             };
             
+        }
+
+        public async Task< ServiceResponse> UpdateEmployeeProfile(UserProfileDto profile)
+        {
+           var profileInDb=await  _userProfileRepo.Read(profile.Id);
+            if (profileInDb == null) return new ServiceResponse 
+            {
+                Result = AppServiceResult.Failed,
+                Data = JsonConvert.SerializeObject(new
+                {
+                    errors= new
+                    {
+                        profileId=new string[] {"user profile was not found "}
+                    }
+                })
+            };
+            profileInDb=_mapper.Map<UserProfile>(profile);
+            _userProfileRepo.Update(profileInDb);
+            var rowsAffected=await _unitOfWork.SaveAsync();
+            if(rowsAffected == 1) return new ServiceResponse
+            {
+                Result = AppServiceResult.Succeeded,
+                Data = JsonConvert.SerializeObject(new
+                {
+                    message="update successful"
+                })
+            };
+
+            return new ServiceResponse
+            {
+                Result = AppServiceResult.Unknown,
+                Data = JsonConvert.SerializeObject(new
+                {
+                    errors = new
+                    {
+                        serverError = new string[] { "update operation failed" }
+                    }
+                })
+            };
         }
     }
 }

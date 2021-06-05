@@ -7,7 +7,7 @@ namespace LaundryManagerAPIDomain.Contracts
 {
     public interface IUnitOfWork
     {
-        public Task SaveAsync();
-        public void  Save();
+        public Task<int> SaveAsync();
+        public int  Save();
     }
 }

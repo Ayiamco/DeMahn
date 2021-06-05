@@ -72,9 +72,24 @@ namespace LaundryManagerWebUI.Controllers
         }
 
         [HttpPut("{profileId}")]
-        public IActionResult UpdateProfile(int profileId)
+        public async Task<IActionResult> UpdateProfile(UserProfileDto profile)
         {
-            return Ok();
+            try
+            {
+                if (!ModelState.IsValid) return BadRequest();
+                var resp = await employeeService.UpdateEmployeeProfile(profile);
+                if (resp.Result == AppServiceResult.Succeeded) return Ok(resp.Data);
+                if (resp.Result == AppServiceResult.Failed) return BadRequest(resp.Data);
+                return StatusCode(500, resp.Data);
+            }
+            catch
+            {
+                //log error
+                return StatusCode(500, JsonConvert.SerializeObject(new
+                    { errors= new { serverError= new string[] { "something wrong occured"} } }));
+            }
+            
+           
         }
     }
 }
