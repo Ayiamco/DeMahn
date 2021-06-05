@@ -122,7 +122,8 @@ namespace LaundryManagerWebUI.Services
                         refreshToken = user.RefreshToken,
                         laundryName = laundry.Name,
                         laundryId = laundry.Id,
-                        id=user.Id
+                        id=user.Id,
+                        profileId=user.ProfileId
 
                     }}),
                 };

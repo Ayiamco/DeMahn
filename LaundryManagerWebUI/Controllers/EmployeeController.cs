@@ -70,5 +70,11 @@ namespace LaundryManagerWebUI.Controllers
             }
             
         }
+
+        [HttpPut("{profileId}")]
+        public IActionResult UpdateProfile(int profileId)
+        {
+            return Ok();
+        }
     }
 }
