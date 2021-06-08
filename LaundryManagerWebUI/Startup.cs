@@ -66,7 +66,7 @@ namespace LaundryManagerWebUI
             services.AddIdentity<ApplicationUser, IdentityRole>(opt=>
             {
                 opt.User.RequireUniqueEmail = true;
-                //opt.SignIn.RequireConfirmedEmail = true;
+                opt.SignIn.RequireConfirmedEmail = true;
             }).AddEntityFrameworkStores<ApplicationDbContext>()
               .AddDefaultTokenProviders();
 

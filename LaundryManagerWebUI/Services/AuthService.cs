@@ -92,8 +92,12 @@ namespace LaundryManagerWebUI.Services
             if (result.Succeeded)
             {
                 await _userManager.AddToRoleAsync(user, RoleNames.Owner);
-                return new ServiceResponse { Result= AppServiceResult.Succeeded,
-                    Data= user.Laundry.Id.ToString() };
+                await SendConfirmationEmail(user);
+                return new ServiceResponse
+                { 
+                    Result= AppServiceResult.Succeeded,
+                    Data= user.Laundry.Id.ToString() 
+                };
             }
 
             return new ServiceResponse
@@ -128,12 +132,28 @@ namespace LaundryManagerWebUI.Services
                     }}),
                 };
             }
-            if(user== null) return new ServiceResponse
+
+            if (user== null) return new ServiceResponse
             {
                 Result = AppServiceResult.Failed,
                 Data = JsonConvert.SerializeObject(new 
                 { errors =  new { username= new string[] { "user does not exist" } } }),
-            }; ;
+            };
+
+            var response = new ServiceResponse { Result = AppServiceResult.Failed };
+            if (result.IsNotAllowed)
+            {
+                await SendConfirmationEmail(user);
+                response.Data = JsonConvert.SerializeObject(new
+                {
+                    errors =
+                    new
+                    {
+                        account = new string[] { "account is not confirmed" },
+                        message = "check your mail for confirmation link"
+                    }
+                });
+            }
 
             if (user != null && !result.IsLockedOut && !result.IsNotAllowed) return new ServiceResponse
             {
@@ -151,6 +171,28 @@ namespace LaundryManagerWebUI.Services
 
         }
 
+        public async Task<ServiceResponse> ConfirmEmail(string token, string userId)
+        {
+            var user=await _userManager.FindByIdAsync(userId);
+            if (user == null) return new ServiceResponse
+            {
+                Result = AppServiceResult.Failed,
+                Data = JsonConvert.SerializeObject(new
+                { errors = new { username = new string[] { "user does not exist" } } }),
+            }; 
+            var result= await _userManager.ConfirmEmailAsync(user,token);
+            if (result.Succeeded) return new ServiceResponse
+            {
+                Result = AppServiceResult.Succeeded
+            };
+
+            return new ServiceResponse
+            {
+                Result = AppServiceResult.Unknown,
+                Data = JsonConvert.SerializeObject(new
+                { message="unknown error occured" }),
+            }; ;
+        }
         public async Task<ServiceResponse> RefreshJWtToken(JWTDto model)
         {
             try
@@ -310,6 +352,21 @@ namespace LaundryManagerWebUI.Services
             }
         }
 
+        private async Task SendConfirmationEmail(ApplicationUser user)
+        {
+            var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+            var confirmationLink = $"{_config[AppConstants.ClientBaseUrl]}confirmEmail" +
+                $"?confirmationToken={confirmEmailToken},id={user.Id}"; ;
+            var message=new Message(new List<string> { user.Email },$"{user.Laundry.Name} email confirmation",
+                @$"
+                    <h4>Hi,</h4>
+                    <p>please click on this <a href={confirmationLink}>link</a> to confirm your email and complete your laundry 
+                        registration, thanks.
+                    </p>
+                    
+                ");
+            await _mailService.SendEmailAsync(message,IsHTML: true); 
+        }
         private Dictionary<string,string[]> GetErrors(IEnumerable<IdentityError> errors)
         {
             var obj = new Dictionary<string, string[]>();

@@ -76,4 +76,10 @@ namespace LaundryManagerWebUI.Dtos
         [Required]
         public string Name { get; set; }
     }
+
+    public class ConfirmEmailDto
+    {
+        public string ConfirmationToken { get; set; }
+        public string Id { get; set; }
+    }
 }

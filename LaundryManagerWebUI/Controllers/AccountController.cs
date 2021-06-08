@@ -38,6 +38,18 @@ namespace LaundryManagerWebUI.Controllers
             return StatusCode(500);
         }
 
+        [HttpGet("confirmEmail")]
+        public async Task<IActionResult> ConfirmEmail(ConfirmEmailDto model)
+        {
+           if (!ModelState.IsValid) return BadRequest();
+           var resp= await _authService.ConfirmEmail(model.ConfirmationToken, model.Id);
+
+            if (resp.Result == AppServiceResult.Succeeded) return Ok();
+            if (resp.Result == AppServiceResult.Failed) return BadRequest(resp.Data);
+
+            return StatusCode(500, resp.Data);
+        }
+
         
 
         [HttpPost("login")]
