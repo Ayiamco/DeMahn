@@ -21,7 +21,7 @@ namespace LaundryManagerWebUI.Services
 {
     public enum AppServiceResult
     {
-        Succeeded,Failed,Unknown,Prohibited
+        Succeeded,Failed,Unknown,Prohibited,TwoFactorEnabled
     }
     public class AuthService : IAuthService
     {
@@ -88,6 +88,7 @@ namespace LaundryManagerWebUI.Services
                 }
             };
 
+            user.TwoFactorEnabled = true;
             var result = await _userManager.CreateAsync(user, model.Password); ;
             if (result.Succeeded)
             {
@@ -112,7 +113,12 @@ namespace LaundryManagerWebUI.Services
             var user = await _userManager.FindByEmailAsync(model.Username);
             var result = await _signManager.PasswordSignInAsync(model.Username, model.Password, false, false);
             if (result.Succeeded)
-            {  
+            {
+                if (user.TwoFactorEnabled)
+                {
+                    await SendEmail2FAToken(user);
+                    return new ServiceResponse { Result = AppServiceResult.TwoFactorEnabled };
+                }
                 var userRole = _userRepo.GetUserRole(user);
                 var token = _jwtmanager.GetToken(new JWTDto { UserEmail = model.Username, UserId = user.Id, UserRole = userRole });
                 var laundry = await laundryRepo.GetLaundryByUserId(new Guid(user.Id));
@@ -133,41 +139,45 @@ namespace LaundryManagerWebUI.Services
                 };
             }
 
-            if (user== null) return new ServiceResponse
-            {
-                Result = AppServiceResult.Failed,
-                Data = JsonConvert.SerializeObject(new 
-                { errors =  new { username= new string[] { "user does not exist" } } }),
-            };
-
             var response = new ServiceResponse { Result = AppServiceResult.Failed };
-            if (result.IsNotAllowed)
+            if (user== null) 
+            {
+                response.Data = JsonConvert.SerializeObject(new
+                { errors = new { username = new string[] { "user does not exist" } } });
+                return response;
+            }
+
+            else if (result.IsNotAllowed)
             {
                 await SendConfirmationEmail(user);
                 response.Data = JsonConvert.SerializeObject(new
                 {
-                    errors =
-                    new
-                    {
-                        account = new string[] { "account is not confirmed" },
-                        message = "check your mail for confirmation link"
-                    }
+                    message = "check your mail for confirmation link",
+                    errors =new{account = new string[] { "account is not confirmed" }}
                 });
             }
 
-            if (user != null && !result.IsLockedOut && !result.IsNotAllowed) return new ServiceResponse
+            else if (user != null && !result.IsLockedOut && !result.IsNotAllowed) 
             {
-                Result = AppServiceResult.Failed,
-                Data = JsonConvert.SerializeObject(new
-                { errors = new { password = new string[] { "password is incorrect" } } }),
+                response.Data = JsonConvert.SerializeObject(new
+                { 
+                    status="failed",
+                    errors = new { password = new string[] { "password is incorrect" } },
+                    message="password is incorrect"
+                });
+            }
+
+            else
+            {
+                response.Result = AppServiceResult.Unknown;
+                response.Data = JsonConvert.SerializeObject(new
+                { 
+                    status= "failed",
+                    message="some server error occured"
+                });
             };
 
-            return new ServiceResponse
-            {
-                Result = AppServiceResult.Unknown,
-                Data = JsonConvert.SerializeObject(new
-                { errors = new { server = new string[] { "internal server error" } } }),
-            }; ;
+            return response;
 
         }
 
@@ -352,11 +362,27 @@ namespace LaundryManagerWebUI.Services
             }
         }
 
+        private async Task SendEmail2FAToken(ApplicationUser user)
+        {
+            if (user.Profile == null) user = _userRepo.GetUserWithProfile(user.Id);
+            var token = await _userManager.GenerateTwoFactorTokenAsync(user, "Email");
+            var message = new Message(new List<string> { user.Email }, $"{user.Laundry.Name} email confirmation",
+               @$"
+                    <h4>Hi {user.Profile.Name},</h4>
+                    <p>please use {token} as your laundry login OTP, thanks.
+                    </p>
+                    
+                ");
+            
+            await _mailService.SendEmailAsync(message, IsHTML: true);
+        }
+
         private async Task SendConfirmationEmail(ApplicationUser user)
         {
             var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var confirmationLink = $"{_config[AppConstants.ClientBaseUrl]}confirmEmail" +
-                $"?confirmationToken={confirmEmailToken},id={user.Id}"; ;
+                $"?confirmationToken={confirmEmailToken},id={user.Id}";
+            if (user.Laundry == null) user = _userRepo.GetUserwithLaundry(user.Id);
             var message=new Message(new List<string> { user.Email },$"{user.Laundry.Name} email confirmation",
                 @$"
                     <h4>Hi,</h4>
