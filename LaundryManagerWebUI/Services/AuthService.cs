@@ -112,33 +112,19 @@ namespace LaundryManagerWebUI.Services
         {
             var user = await _userManager.FindByEmailAsync(model.Username);
             var result = await _signManager.PasswordSignInAsync(model.Username, model.Password, false, false);
-            if (result.Succeeded)
-            {
-                if (user.TwoFactorEnabled)
-                {
-                    await SendEmail2FAToken(user);
-                    return new ServiceResponse { Result = AppServiceResult.TwoFactorEnabled };
-                }
-                var userRole = _userRepo.GetUserRole(user);
-                var token = _jwtmanager.GetToken(new JWTDto { UserEmail = model.Username, UserId = user.Id, UserRole = userRole });
-                var laundry = await laundryRepo.GetLaundryByUserId(new Guid(user.Id));
-                await UpdateRefreshToken(user);
-                return new ServiceResponse
-                {
-                    Result = AppServiceResult.Succeeded,
-                    Data = JsonConvert.SerializeObject(new { data = new
-                    {
-                        jwtToken = token,
-                        refreshToken = user.RefreshToken,
-                        laundryName = laundry.Name,
-                        laundryId = laundry.Id,
-                        id=user.Id,
-                        profileId=user.ProfileId
 
-                    }}),
+            if (result.RequiresTwoFactor)
+            {
+                await SendEmail2FAToken(user);
+                return new ServiceResponse {
+                    Result = AppServiceResult.TwoFactorEnabled,
+                    Data = JsonConvert.SerializeObject(new
+                    {
+                        message = "Please check your mail for your authentication code"
+                    })
                 };
             }
-
+            
             var response = new ServiceResponse { Result = AppServiceResult.Failed };
             if (user== null) 
             {
@@ -202,6 +188,39 @@ namespace LaundryManagerWebUI.Services
                 Data = JsonConvert.SerializeObject(new
                 { message="unknown error occured" }),
             }; ;
+        }
+
+        public async Task<ServiceResponse> Login2Factor(string code,string username)
+        {
+            var user = await _userManager.FindByEmailAsync(username);
+            var result = await _signManager.TwoFactorSignInAsync("Email", code, false, false);
+            if (result.Succeeded)
+            {
+
+                var userRole = _userRepo.GetUserRole(user);
+                var token = _jwtmanager.GetToken(new JWTDto { UserEmail = username, UserId = user.Id, UserRole = userRole });
+                var laundry = await laundryRepo.GetLaundryByUserId(new Guid(user.Id));
+                await UpdateRefreshToken(user);
+                return new ServiceResponse
+                {
+                    Result = AppServiceResult.Succeeded,
+                    Data = JsonConvert.SerializeObject(new
+                    {
+                        data = new
+                        {
+                            jwtToken = token,
+                            refreshToken = user.RefreshToken,
+                            laundryName = laundry.Name,
+                            laundryId = laundry.Id,
+                            id = user.Id,
+                            profileId = user.ProfileId
+
+                        }
+                    }),
+                };
+            }
+
+            return new ServiceResponse();
         }
         public async Task<ServiceResponse> RefreshJWtToken(JWTDto model)
         {
@@ -364,7 +383,7 @@ namespace LaundryManagerWebUI.Services
 
         private async Task SendEmail2FAToken(ApplicationUser user)
         {
-            if (user.Profile == null) user = _userRepo.GetUserWithProfile(user.Id);
+            if (user.Profile == null) user = _userRepo.GetUserWithNavProps(user.Id);
             var token = await _userManager.GenerateTwoFactorTokenAsync(user, "Email");
             var message = new Message(new List<string> { user.Email }, $"{user.Laundry.Name} email confirmation",
                @$"
@@ -382,7 +401,7 @@ namespace LaundryManagerWebUI.Services
             var confirmEmailToken = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             var confirmationLink = $"{_config[AppConstants.ClientBaseUrl]}confirmEmail" +
                 $"?confirmationToken={confirmEmailToken},id={user.Id}";
-            if (user.Laundry == null) user = _userRepo.GetUserwithLaundry(user.Id);
+            if (user.Laundry == null) user = _userRepo.GetUserWithNavProps(user.Id);
             var message=new Message(new List<string> { user.Email },$"{user.Laundry.Name} email confirmation",
                 @$"
                     <h4>Hi,</h4>

@@ -75,7 +75,7 @@ namespace LaundryManagerWebUI.Services
 
         public ServiceResponse GetEmployee(string userId)
         {
-            var user = _identityRepo.GetUserWithProfile(userId);
+            var user = _identityRepo.GetUserWithNavProps(userId);
             if(user == null) return new ServiceResponse
             {
                 Result=AppServiceResult.Failed,

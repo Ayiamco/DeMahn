@@ -39,7 +39,7 @@ namespace LaundryManagerWebUI.Controllers
         }
 
         [HttpGet("confirmEmail")]
-        public async Task<IActionResult> ConfirmEmail(ConfirmEmailDto model)
+        public async Task<IActionResult> ConfirmEmail([FromQuery]ConfirmEmailDto model)
         {
            if (!ModelState.IsValid) return BadRequest();
            var resp= await _authService.ConfirmEmail(model.ConfirmationToken, model.Id);
@@ -60,6 +60,7 @@ namespace LaundryManagerWebUI.Controllers
             var result = await _authService.Authenticate(model);
             if (result.Result == AppServiceResult.Succeeded) return Ok(result.Data);
             if (result.Result == AppServiceResult.Failed) return BadRequest(result.Data);
+            if (result.Result == AppServiceResult.TwoFactorEnabled) return Ok(result.Data);
             return StatusCode(500,result.Data);
 
         }
@@ -100,6 +101,15 @@ namespace LaundryManagerWebUI.Controllers
             if (resp.Result == AppServiceResult.Succeeded) return Ok(resp.Data);
             if (resp.Result == AppServiceResult.Failed) return BadRequest(resp.Data);
 
+            return StatusCode(500);
+        }
+
+        [HttpPost("login2fa")]
+        public async Task<IActionResult> TwoFactorLogin([FromBody] Login2FaDto model)
+        {
+            var result = await _authService.Login2Factor(model.code, model.username);
+
+            if (result.Result == AppServiceResult.Succeeded) return Ok(result.Data);
             return StatusCode(500);
         }
     }

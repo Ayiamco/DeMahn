@@ -82,4 +82,10 @@ namespace LaundryManagerWebUI.Dtos
         public string ConfirmationToken { get; set; }
         public string Id { get; set; }
     }
+
+    public class Login2FaDto
+    {
+        public string username { get; set; }
+        public string code { get; set; }
+    }
 }

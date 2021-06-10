@@ -41,9 +41,11 @@ namespace LaundryManagerAPIDomain.Queries
                 
         }
 
-        public ApplicationUser GetUserWithProfile(string userId)
+        public ApplicationUser GetUserWithNavProps(string userId)
         {
             var user = _context.Set<ApplicationUser>()
+                .Include(x => x.Laundry)
+                .ThenInclude(x => x.Address)
                 .Include(x=>x.Profile)
                 .ThenInclude(x=> x.Address)
                 .Where(x=> x.Id==userId)
@@ -51,15 +53,6 @@ namespace LaundryManagerAPIDomain.Queries
             return user;
         }
 
-        public ApplicationUser GetUserwithLaundry(string userId)
-        {
-            var user = _context.Set<ApplicationUser>()
-                .Include(x => x.Laundry)
-                .ThenInclude(x => x.Address)
-                .Where(x => x.Id == userId)
-                .AsQueryable().SingleOrDefault();
-            return user;
-        }
 
     }
 }
