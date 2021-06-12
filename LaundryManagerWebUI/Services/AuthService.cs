@@ -138,6 +138,7 @@ namespace LaundryManagerWebUI.Services
                 await SendConfirmationEmail(user);
                 response.Data = JsonConvert.SerializeObject(new
                 {
+                    status= "failed",
                     message = "check your mail for confirmation link",
                     errors =new{account = new string[] { "account is not confirmed" }}
                 });
@@ -220,7 +221,7 @@ namespace LaundryManagerWebUI.Services
                 };
             }
 
-            return new ServiceResponse();
+            return new ServiceResponse { Result= AppServiceResult.Unknown};
         }
         public async Task<ServiceResponse> RefreshJWtToken(JWTDto model)
         {
