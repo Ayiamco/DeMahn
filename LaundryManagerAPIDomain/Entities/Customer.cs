@@ -26,6 +26,7 @@ namespace LaundryManagerAPIDomain.Entities
         public string PhoneNumber { get; set; }
 
         public string EmployeeId { get; set; }
+        public Guid LaundryId { get; set; }
         public ApplicationUser Employee { get; set; }
 
         [Required]

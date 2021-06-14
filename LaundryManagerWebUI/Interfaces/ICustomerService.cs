@@ -8,6 +8,6 @@ namespace LaundryManagerWebUI.Interfaces
 {
     public interface ICustomerService
     {
-        ServiceResponse AddNew(NewCustomerDto model);
+        Task<ServiceResponse> AddNew(NewCustomerDto model);
     }
 }

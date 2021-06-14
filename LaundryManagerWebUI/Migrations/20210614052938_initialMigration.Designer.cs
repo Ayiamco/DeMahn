@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LaundryManagerWebUI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20210602141947_AddEmployeeInTransitTable")]
-    partial class AddEmployeeInTransitTable
+    [Migration("20210614052938_initialMigration")]
+    partial class initialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -39,6 +39,9 @@ namespace LaundryManagerWebUI.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
+
+                    b.Property<Guid>("LaundryId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
@@ -81,6 +84,8 @@ namespace LaundryManagerWebUI.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("LaundryId");
+
                     b.HasIndex("NormalizedEmail")
                         .HasDatabaseName("EmailIndex");
 
@@ -92,6 +97,53 @@ namespace LaundryManagerWebUI.Migrations
                     b.HasIndex("ProfileId");
 
                     b.ToTable("AspNetUsers");
+                });
+
+            modelBuilder.Entity("LaundryManagerAPIDomain.Entities.Customer", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EmployeeId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("LaundryId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("TotalPurchase")
+                        .HasColumnType("decimal(18,4)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("Customers");
                 });
 
             modelBuilder.Entity("LaundryManagerAPIDomain.Entities.EmployeeInTransit", b =>
@@ -178,9 +230,6 @@ namespace LaundryManagerWebUI.Migrations
                     b.Property<int>("Gender")
                         .HasColumnType("int");
 
-                    b.Property<Guid>("LaundryId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
@@ -190,8 +239,6 @@ namespace LaundryManagerWebUI.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AddressId");
-
-                    b.HasIndex("LaundryId");
 
                     b.ToTable("UserProfiles");
                 });
@@ -329,13 +376,30 @@ namespace LaundryManagerWebUI.Migrations
 
             modelBuilder.Entity("LaundryManagerAPIDomain.Entities.ApplicationUser", b =>
                 {
+                    b.HasOne("LaundryManagerAPIDomain.Entities.Laundry", "Laundry")
+                        .WithMany()
+                        .HasForeignKey("LaundryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("LaundryManagerAPIDomain.Entities.UserProfile", "Profile")
                         .WithMany()
                         .HasForeignKey("ProfileId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.Navigation("Laundry");
+
                     b.Navigation("Profile");
+                });
+
+            modelBuilder.Entity("LaundryManagerAPIDomain.Entities.Customer", b =>
+                {
+                    b.HasOne("LaundryManagerAPIDomain.Entities.ApplicationUser", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId");
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("LaundryManagerAPIDomain.Entities.EmployeeInTransit", b =>
@@ -366,15 +430,7 @@ namespace LaundryManagerWebUI.Migrations
                         .WithMany()
                         .HasForeignKey("AddressId");
 
-                    b.HasOne("LaundryManagerAPIDomain.Entities.Laundry", "Laundry")
-                        .WithMany()
-                        .HasForeignKey("LaundryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.Navigation("Address");
-
-                    b.Navigation("Laundry");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

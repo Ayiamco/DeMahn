@@ -18,5 +18,6 @@ namespace LaundryManagerWebUI.Dtos
 
         [Phone]
         public string PhoneNumber { get; set; }
+        public string EmployeeId { get; set; }
     }
 }

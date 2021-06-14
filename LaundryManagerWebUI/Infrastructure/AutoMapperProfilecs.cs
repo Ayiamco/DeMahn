@@ -16,6 +16,9 @@ namespace LaundryManagerWebUI.Infrastructure
             CreateMap<ApplicationUser, EmployeeDto>();
             CreateMap<NewEmployeeDto, ApplicationUser>()
                 .ForMember(x => x.Email, y => y.MapFrom(x => x.Username));
+            CreateMap<NewCustomerDto, Customer>()
+                .ForMember(x => x.CreatedAt, y => y.MapFrom(x => DateTime.Now))
+                .ForMember(x => x.UpdatedAt, y => y.MapFrom(x => DateTime.Now));
         }
     }
 }

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace LaundryManagerWebUI.Migrations
 {
-    public partial class initalMigration : Migration
+    public partial class initialMigration : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -65,7 +65,6 @@ namespace LaundryManagerWebUI.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AddressId = table.Column<int>(type: "int", nullable: false),
-                    EmployeeCount = table.Column<int>(type: "int", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -86,7 +85,6 @@ namespace LaundryManagerWebUI.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    LaundryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     AddressId = table.Column<int>(type: "int", nullable: true),
                     Gender = table.Column<int>(type: "int", nullable: false),
@@ -97,17 +95,30 @@ namespace LaundryManagerWebUI.Migrations
                 {
                     table.PrimaryKey("PK_UserProfiles", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_UserProfiles_Laundries_LaundryId",
-                        column: x => x.LaundryId,
-                        principalTable: "Laundries",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
                         name: "FK_UserProfiles_Locations_AddressId",
                         column: x => x.AddressId,
                         principalTable: "Locations",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "EmployeesInTransit",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Username = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LaundryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_EmployeesInTransit", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_EmployeesInTransit_Laundries_LaundryId",
+                        column: x => x.LaundryId,
+                        principalTable: "Laundries",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -117,6 +128,7 @@ namespace LaundryManagerWebUI.Migrations
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProfileId = table.Column<int>(type: "int", nullable: false),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    LaundryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -135,6 +147,12 @@ namespace LaundryManagerWebUI.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetUsers_Laundries_LaundryId",
+                        column: x => x.LaundryId,
+                        principalTable: "Laundries",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_AspNetUsers_UserProfiles_ProfileId",
                         column: x => x.ProfileId,
@@ -228,6 +246,33 @@ namespace LaundryManagerWebUI.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "Customers",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Username = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Address = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    EmployeeId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    LaundryId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    TotalPurchase = table.Column<decimal>(type: "decimal(18,4)", nullable: false),
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Customers", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Customers_AspNetUsers_EmployeeId",
+                        column: x => x.EmployeeId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -261,6 +306,11 @@ namespace LaundryManagerWebUI.Migrations
                 column: "NormalizedEmail");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AspNetUsers_LaundryId",
+                table: "AspNetUsers",
+                column: "LaundryId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AspNetUsers_ProfileId",
                 table: "AspNetUsers",
                 column: "ProfileId");
@@ -273,6 +323,16 @@ namespace LaundryManagerWebUI.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Customers_EmployeeId",
+                table: "Customers",
+                column: "EmployeeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_EmployeesInTransit_LaundryId",
+                table: "EmployeesInTransit",
+                column: "LaundryId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Laundries_AddressId",
                 table: "Laundries",
                 column: "AddressId");
@@ -281,11 +341,6 @@ namespace LaundryManagerWebUI.Migrations
                 name: "IX_UserProfiles_AddressId",
                 table: "UserProfiles",
                 column: "AddressId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserProfiles_LaundryId",
-                table: "UserProfiles",
-                column: "LaundryId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -306,16 +361,22 @@ namespace LaundryManagerWebUI.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "Customers");
+
+            migrationBuilder.DropTable(
+                name: "EmployeesInTransit");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
-                name: "UserProfiles");
+                name: "Laundries");
 
             migrationBuilder.DropTable(
-                name: "Laundries");
+                name: "UserProfiles");
 
             migrationBuilder.DropTable(
                 name: "Locations");

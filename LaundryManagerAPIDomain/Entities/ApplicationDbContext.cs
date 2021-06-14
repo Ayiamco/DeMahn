@@ -19,5 +19,10 @@ namespace LaundryManagerAPIDomain.Entities
         DbSet<EmployeeInTransit> EmployeesInTransit { get; set; }
         DbSet<Customer> Customers { get; set; }
 
+        //protected override void OnModelCreating(ModelBuilder modelBuilder)
+        //{
+        //    modelBuilder.Entity<Customer>().HasAlternateKey(vf => new { vf.Username, vf.LaundryId});
+        //}
+
     }
 }
