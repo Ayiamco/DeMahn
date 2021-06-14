@@ -17,6 +17,7 @@ namespace LaundryManagerAPIDomain.Entities
         DbSet<Location> Locations { get; set; }
         DbSet<Laundry> Laundries { get; set; }
         DbSet<EmployeeInTransit> EmployeesInTransit { get; set; }
+        DbSet<Customer> Customers { get; set; }
 
     }
 }
