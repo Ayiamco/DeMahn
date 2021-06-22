@@ -97,7 +97,17 @@ namespace LaundryManagerWebUI
                     ValidateAudience = false,
                 };
             });
+
+            //.AddGoogle(options =>
+            // {
+            //     IConfigurationSection googleAuthNSection =
+            //         Configuration.GetSection("Authentication:Google");
+
+            //     options.ClientId = googleAuthNSection["ClientId"];
+            //     options.ClientSecret = googleAuthNSection["ClientSecret"];
+            // })
             //Email service configurations
+
             var emailConfig = Configuration.GetSection("EmailConfiguration").Get<EmailConfiguration>();
             services.AddSingleton(emailConfig);
             services.AddScoped<IEmailSender, EmailSender>();

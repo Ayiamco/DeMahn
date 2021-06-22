@@ -52,7 +52,7 @@ namespace LaundryManagerAPI.UnitTests.CustomerServiceTests
         }
 
         [Test]
-        public async Task EmployeeExistAndCustomerDoesNotExist_ReturnsSuccess()
+        public async Task EmployeeExistAndCustomerDoesNotExist_ReturnsSuccess() 
         {
             //Arrange
             
@@ -71,7 +71,7 @@ namespace LaundryManagerAPI.UnitTests.CustomerServiceTests
         }
 
         [Test]
-        public async Task EmployeeExistButCustomerAlreadyExist_ReturnsFailed()
+        public async Task CustomerAlreadyExist_ReturnsFailed()
         {
             //Arrange
             _identityRepo.Setup(r => r.GetUserWithNavProps(dummyUserId.ToString())).Returns(dummyEmployee);
